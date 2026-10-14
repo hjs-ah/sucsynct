@@ -218,7 +218,7 @@ export default function SettingsPage() {
                   Auto-delete audio after transcription
                 </p>
                 <p className="text-xs text-stone-500 dark:text-stone-400">
-                  Keeps only the text and your scores.
+                  Keeps only the text and your scores. Recordings are never saved to your account.
                 </p>
               </div>
               <input

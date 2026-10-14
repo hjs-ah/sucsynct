@@ -21,7 +21,7 @@ const NEW_ENTRY_TOUR: TourStep[] = [
   {
     targetId: "tour-mode-toggle",
     title: "Speak or write",
-    body: "Speak records your voice — you'll still type or paste what you said, since there's no live transcription yet. Write skips straight to typing.",
+    body: "Speak records your voice and turns it into text you can edit before it's scored. Upload does the same for an audio file. Write skips straight to typing.",
   },
   {
     targetId: "tour-analyzer-row",
@@ -38,10 +38,20 @@ const NEW_ENTRY_TOUR: TourStep[] = [
 const MODES: { value: Mode; label: string; available: boolean }[] = [
   { value: "write", label: "Write", available: true },
   { value: "speak", label: "Speak", available: true },
-  { value: "upload", label: "Paste / upload", available: false },
+  { value: "upload", label: "Upload", available: true },
 ];
 
 const WAVE_BARS = 6;
+// Vercel caps request bodies at 4.5 MB; the transcribe route enforces 4 MB.
+const MAX_AUDIO_BYTES = 4 * 1024 * 1024;
+
+function extensionFor(mime: string) {
+  if (mime.includes("mp4") || mime.includes("m4a") || mime.includes("aac")) return "m4a";
+  if (mime.includes("mpeg") || mime.includes("mp3")) return "mp3";
+  if (mime.includes("wav")) return "wav";
+  if (mime.includes("ogg")) return "ogg";
+  return "webm";
+}
 
 type RecordingState = "idle" | "recording" | "paused" | "stopped";
 type Step = "compose" | "selfscore";
@@ -75,6 +85,15 @@ export default function NewEntryPage() {
   const rafRef = useRef<number | null>(null);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+  const chunksRef = useRef<Blob[]>([]);
+
+  // Playback + transcription. The audio only ever lives in this tab's memory
+  // (an object URL). It is never uploaded for storage; it's sent once to the
+  // transcribe route, which returns text and keeps nothing.
+  const [audioUrl, setAudioUrl] = useState<string | null>(null);
+  const [audioName, setAudioName] = useState("recording.webm");
+  const [transcribing, setTranscribing] = useState(false);
+  const [transcribeNote, setTranscribeNote] = useState<string | null>(null);
 
   // Self-score step
   const [step, setStep] = useState<Step>("compose");
@@ -97,6 +116,60 @@ export default function NewEntryPage() {
       // eslint-disable-next-line react-hooks/exhaustive-deps
     };
   }, []);
+
+  // Free the in-memory audio whenever it's replaced or the page goes away.
+  useEffect(() => {
+    return () => {
+      if (audioUrl) URL.revokeObjectURL(audioUrl);
+    };
+  }, [audioUrl]);
+
+  function clearAudio() {
+    setAudioUrl(null);
+    setTranscribeNote(null);
+    chunksRef.current = [];
+  }
+
+  async function transcribeBlob(blob: Blob, name: string) {
+    setTranscribing(true);
+    setTranscribeNote(null);
+    try {
+      const form = new FormData();
+      form.append("file", blob, name);
+      const res = await fetch("/api/transcribe", { method: "POST", body: form });
+      const data = (await res.json().catch(() => ({}))) as { text?: string; error?: string };
+      if (!res.ok || !data.text) {
+        setTranscribeNote(data.error ?? "Transcription failed. You can type or paste the text instead.");
+        return;
+      }
+      // Append if there's already text so a second take doesn't wipe edits.
+      setText((prev) => (prev.trim() ? `${prev.trim()}\n\n${data.text}` : (data.text as string)));
+      setTranscribeNote("Transcribed. Fix anything it misheard before you submit.");
+      setTimeout(goToAnalysis, 150);
+    } catch {
+      setTranscribeNote("Transcription failed. You can type or paste the text instead.");
+    } finally {
+      setTranscribing(false);
+    }
+  }
+
+  function handleFileChosen(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+    setMicError(null);
+    if (!file.type.startsWith("audio/") && !file.type.startsWith("video/")) {
+      setMicError("Choose an audio file (m4a, mp3, wav, webm…).");
+      return;
+    }
+    if (file.size > MAX_AUDIO_BYTES) {
+      setMicError("That file is over 4 MB. Try a shorter clip or a more compressed format.");
+      return;
+    }
+    setAudioName(file.name);
+    setAudioUrl(URL.createObjectURL(file));
+    void transcribeBlob(file, file.name);
+  }
 
   // The missing link the recording flow was criticized for: stopping never
   // pointed you anywhere. This both scrolls the text box into view and
@@ -157,6 +230,10 @@ export default function NewEntryPage() {
       analyserRef.current = analyser;
 
       const recorder = new MediaRecorder(stream);
+      chunksRef.current = [];
+      recorder.addEventListener("dataavailable", (ev) => {
+        if (ev.data.size > 0) chunksRef.current.push(ev.data);
+      });
       recorderRef.current = recorder;
       recorder.start();
 
@@ -187,19 +264,27 @@ export default function NewEntryPage() {
 
   function handleRestart() {
     stopEverything();
+    clearAudio();
     setSeconds(0);
     setWaveHeights(Array(WAVE_BARS).fill(20));
     setRecordingState("idle");
   }
 
-  function finishRecording(): Promise<void> {
+  function finishRecording(): Promise<Blob | null> {
     return new Promise((resolve) => {
       const recorder = recorderRef.current;
       if (!recorder || recorder.state === "inactive") {
-        resolve();
+        resolve(null);
         return;
       }
-      recorder.addEventListener("stop", () => resolve(), { once: true });
+      recorder.addEventListener(
+        "stop",
+        () => {
+          const mime = recorder.mimeType || "audio/webm";
+          resolve(chunksRef.current.length ? new Blob(chunksRef.current, { type: mime }) : null);
+        },
+        { once: true }
+      );
       recorder.stop();
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
       if (timerRef.current) clearInterval(timerRef.current);
@@ -213,11 +298,22 @@ export default function NewEntryPage() {
   // but nothing ever moved you there short of hitting Submit.
   async function handleStop() {
     if (recordingState !== "recording" && recordingState !== "paused") return;
-    await finishRecording();
+    const blob = await finishRecording();
     setRecordingState("stopped");
-    // Carry you straight to where the actual analysis happens, instead of
-    // leaving you on a "stopped" state with no next step.
-    setTimeout(goToAnalysis, 150);
+    if (!blob) {
+      setTimeout(goToAnalysis, 150);
+      return;
+    }
+    const name = `recording.${extensionFor(blob.type)}`;
+    setAudioName(name);
+    setAudioUrl(URL.createObjectURL(blob));
+    if (blob.size > MAX_AUDIO_BYTES) {
+      setTranscribeNote("That recording is over 4 MB, which is too big to transcribe. Re-record a shorter take, or type it below.");
+      setTimeout(goToAnalysis, 150);
+      return;
+    }
+    // Transcribe straight away; it fills the text box and moves you there.
+    void transcribeBlob(blob, name);
   }
 
   async function handleSubmit() {
@@ -307,6 +403,35 @@ export default function NewEntryPage() {
   }
 
   const canUseRecordRow = mode === "speak";
+
+  const audioPanel = (
+    <div className="flex flex-col gap-2">
+      {audioUrl && (
+        <>
+          <audio controls src={audioUrl} className="w-full" />
+          <div className="flex items-center justify-between gap-2 text-xs text-stone-400 dark:text-stone-500">
+            <span>
+              Playback is temporary and lives only in this tab. We never store your audio; only
+              the text and scores are saved.
+            </span>
+            <a
+              href={audioUrl}
+              download={audioName}
+              className="shrink-0 font-semibold text-brand-orange hover:underline"
+            >
+              Download a copy
+            </a>
+          </div>
+        </>
+      )}
+      {transcribing && (
+        <p className="text-xs text-stone-500 dark:text-stone-400">Transcribing…</p>
+      )}
+      {!transcribing && transcribeNote && (
+        <p className="text-xs text-stone-500 dark:text-stone-400">{transcribeNote}</p>
+      )}
+    </div>
+  );
 
   return (
     <div className="min-h-screen">
@@ -455,12 +580,27 @@ export default function NewEntryPage() {
               </div>
             )}
 
-            {recordingState === "stopped" && (
-              <p className="text-xs text-stone-400 dark:text-stone-500">
-                Recording captured. We don&rsquo;t have live transcription wired up yet, so type or
-                paste what you said below — that&rsquo;s what actually gets scored.
-              </p>
-            )}
+            {recordingState === "stopped" && audioPanel}
+          </div>
+        )}
+
+        {mode === "upload" && (
+          <div className="mb-5 flex flex-col gap-3">
+            <label className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-stone-300 p-6 text-center text-sm text-stone-600 hover:bg-stone-50 dark:border-stone-700 dark:text-stone-300 dark:hover:bg-stone-900">
+              <MicIcon className="h-6 w-6 text-stone-400" />
+              <span className="font-semibold">Choose an audio file</span>
+              <span className="text-xs text-stone-400 dark:text-stone-500">
+                m4a, mp3, wav or webm, up to 4 MB. It&rsquo;s transcribed, then discarded.
+              </span>
+              <input
+                type="file"
+                accept="audio/*,video/mp4,video/webm"
+                onChange={handleFileChosen}
+                className="sr-only"
+              />
+            </label>
+            {micError && <p className="text-xs text-red-500">{micError}</p>}
+            {audioPanel}
           </div>
         )}
 
@@ -468,10 +608,10 @@ export default function NewEntryPage() {
           ref={textareaRef}
           value={text}
           onChange={(e) => setText(e.target.value)}
-          rows={mode === "speak" ? 6 : 10}
+          rows={mode === "write" ? 10 : 6}
           placeholder={
-            mode === "speak"
-              ? "Type or paste what you said..."
+            mode === "speak" || mode === "upload"
+              ? "Your transcript appears here. You can also type or paste..."
               : "Paste or write your story, résumé bullet, or essay draft here..."
           }
           className="w-full resize-none rounded-xl border border-stone-300 bg-transparent p-4 text-sm text-stone-900 placeholder:text-stone-400 focus:border-brand-orange focus:outline-none dark:border-stone-700 dark:text-stone-100"

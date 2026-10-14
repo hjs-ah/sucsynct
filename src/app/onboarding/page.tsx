@@ -218,9 +218,8 @@ export default function OnboardingPage() {
                 className="w-full resize-none rounded-xl border border-stone-300 bg-transparent p-3 text-sm text-stone-900 placeholder:text-stone-400 focus:border-brand-orange focus:outline-none dark:border-stone-700 dark:text-stone-100"
               />
               <p className="text-xs text-stone-400 dark:text-stone-500">
-                Type it here for now. In the full app you can record your voice too — just know
-                there&rsquo;s no live transcription yet, so you&rsquo;ll still type or paste what you
-                said before it&rsquo;s scored.
+                Type it here for now. In the full app you can also record your voice or upload
+                audio, and it&rsquo;s transcribed so you can edit the text before it&rsquo;s scored.
               </p>
               <button
                 onClick={handleCapture}

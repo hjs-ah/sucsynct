@@ -60,7 +60,7 @@ export interface Entry {
 export type AnalyzerStrictness = "supportive" | "moderate" | "strict";
 
 export const STRICTNESS_LABELS: Record<AnalyzerStrictness, string> = {
-  supportive: "Supportive",
+  supportive: "Lite",
   moderate: "Moderate",
   strict: "Strict",
 };

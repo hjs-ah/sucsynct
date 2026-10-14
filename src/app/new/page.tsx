@@ -26,7 +26,7 @@ const NEW_ENTRY_TOUR: TourStep[] = [
   {
     targetId: "tour-analyzer-row",
     title: "How hard we grade",
-    body: "Supportive, Moderate, or Strict — tap to change it any time. It updates your preference everywhere, not just this entry.",
+    body: "Lite, Moderate, or Strict — tap to change it any time. It updates your preference everywhere, not just this entry.",
   },
   {
     targetId: "tour-submit-btn",
@@ -102,7 +102,7 @@ export default function NewEntryPage() {
 
   useEffect(() => {
     getPreferences().then((prefs) => setStrictness(prefs.analyzerStrictness));
-    // Pick up a draft handed off from /notes ("Make it a full entry"), if
+    // Pick up a draft handed off from /notes ("Full analysis"), if
     // there is one, then clear it so it doesn't resurface on a later visit.
     if (typeof window !== "undefined") {
       const draft = window.sessionStorage.getItem("sucsynct:draft-text");
@@ -445,7 +445,7 @@ export default function NewEntryPage() {
           <AnalyzerSelector value={strictness} onChange={handleStrictnessChange} className="w-full" />
         </div>
 
-        <div id="tour-mode-toggle" className="mb-5 flex gap-2">
+        <div id="tour-mode-toggle" className="mb-5 flex justify-center gap-2">
           {MODES.map((m) => (
             <button
               key={m.value}

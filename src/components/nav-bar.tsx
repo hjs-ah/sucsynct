@@ -1,27 +1,36 @@
 import Link from "next/link";
 import { NavDrawer } from "@/components/nav-drawer";
-import { PlusIcon } from "@/components/icons";
+import { HomeIcon, PlusIcon } from "@/components/icons";
 
 export function NavBar() {
   return (
     <header className="border-b border-stone-200 dark:border-stone-800">
-      <div className="mx-auto flex max-w-3xl items-center justify-between gap-2 px-4 py-3 sm:px-6 sm:py-4">
-        <div className="flex items-center gap-2">
-          <NavDrawer />
+      <div className="mx-auto grid max-w-3xl grid-cols-[1fr_auto_1fr] items-center gap-2 px-4 py-3 sm:px-6 sm:py-4">
+        <div className="flex items-center gap-1">
           <Link
             href="/"
-            className="shrink-0 text-base font-bold tracking-tight text-stone-900 dark:text-stone-50"
+            title="Home"
+            aria-label="Home"
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-none text-stone-600 transition-colors hover:bg-stone-100 dark:text-stone-300 dark:hover:bg-stone-800"
           >
-            Sucsynct
+            <HomeIcon className="h-5 w-5" />
           </Link>
+          <NavDrawer />
         </div>
+
+        <Link
+          href="/"
+          className="justify-self-center text-base font-bold tracking-tight text-stone-900 dark:text-stone-50"
+        >
+          Sucsynct
+        </Link>
 
         <Link
           id="tour-new-entry-btn"
           href="/new"
           title="New entry"
           aria-label="New entry"
-          className="flex h-9 shrink-0 items-center gap-1.5 rounded-none bg-brand-yellow px-3.5 text-sm font-semibold text-stone-900 transition-colors hover:bg-brand-yellow-dark"
+          className="flex h-9 shrink-0 items-center gap-1.5 justify-self-end rounded-none bg-brand-yellow px-3.5 text-sm font-semibold text-stone-900 transition-colors hover:bg-brand-yellow-dark"
         >
           <PlusIcon className="h-4 w-4 shrink-0" />
           <span className="hidden sm:inline">New entry</span>

@@ -72,7 +72,7 @@ export default function NotesPage() {
             disabled={!text.trim()}
             className="flex h-10 items-center justify-center rounded-none border border-stone-300 px-4 text-sm font-semibold text-stone-700 hover:border-stone-400 disabled:cursor-not-allowed disabled:opacity-40 dark:border-stone-700 dark:text-stone-300"
           >
-            Make it a full entry
+            Full analysis
           </button>
         </div>
 

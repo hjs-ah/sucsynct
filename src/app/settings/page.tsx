@@ -24,7 +24,7 @@ const SETTINGS_TOUR: TourStep[] = [
   {
     targetId: "tour-analyzer-settings",
     title: "Tune the feedback",
-    body: "Supportive, Moderate, or Strict — this controls how hard the analyzer leans on every piece you submit.",
+    body: "Lite, Moderate, or Strict — this controls how hard the analyzer leans on every piece you submit.",
   },
 ];
 

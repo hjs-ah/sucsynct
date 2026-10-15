@@ -95,12 +95,12 @@ export function NavDrawer() {
         <div
           role="dialog"
           aria-label="Navigation"
-          className={`absolute inset-y-0 left-0 flex w-72 max-w-[85vw] flex-col gap-5 border-r border-stone-200 bg-white p-5 shadow-2xl transition-transform duration-200 ease-out dark:border-stone-800 dark:bg-stone-900 ${
-            open ? "translate-x-0" : "-translate-x-full"
+          className={`absolute inset-y-0 left-0 flex w-72 max-w-[85vw] flex-col gap-5 border-r border-stone-200 bg-white p-5 transition-transform duration-200 ease-out dark:border-stone-800 dark:bg-stone-900 ${
+            open ? "translate-x-0 shadow-2xl" : "-translate-x-full"
           }`}
         >
           <div className="flex items-center justify-between">
-            <span className="text-base font-bold tracking-tight text-stone-900 dark:text-stone-50">
+            <span className="text-base font-bold tracking-tight text-ink dark:text-stone-50">
               Sucsynct
             </span>
             <button

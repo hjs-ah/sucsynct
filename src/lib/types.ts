@@ -38,6 +38,8 @@ export interface ScoreResult {
   evidence: string; // a quoted excerpt + a short note
   strength: string; // one concrete thing that's working
   opportunity: string; // one concrete thing to fix next
+  analysis?: { strong: string; improve: string }; // plain-language "Analysis 1 / Analysis 2"
+  summary?: string; // short Haiku-written summary shown on story cards
   activeVoicePercent: number; // 0-100, share of sentences in active voice
   fillerWords: FillerWordHit[]; // detected filler words, with counts
   jargon: string[]; // flagged buzzwords/jargon terms

@@ -23,10 +23,17 @@ export function ThemeToggle() {
           <button
             key={opt.value}
             type="button"
-            onClick={() => setTheme(opt.value)}
+            onClick={() => {
+              // Briefly turn on global colour transitions so the switch
+              // between light and dark fades instead of snapping.
+              const root = document.documentElement;
+              root.classList.add("theme-fade");
+              setTheme(opt.value);
+              window.setTimeout(() => root.classList.remove("theme-fade"), 500);
+            }}
             className={`flex-1 rounded-none px-3 py-1.5 text-sm font-medium transition-colors ${
               active
-                ? "bg-brand-yellow text-stone-900"
+                ? "bg-brand-yellow text-on-accent"
                 : "text-stone-500 hover:text-stone-700 dark:text-stone-400 dark:hover:text-stone-200"
             }`}
           >

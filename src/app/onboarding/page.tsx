@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { getEntries, makeId, saveEntry, savePreferences } from "@/lib/storage";
@@ -105,8 +106,8 @@ export default function OnboardingPage() {
         <div className="rounded-2xl border border-stone-200 bg-white p-8 dark:border-stone-800 dark:bg-stone-900">
           {step === 0 && (
             <div className="flex flex-col items-center gap-4 text-center">
-              <div className="h-11 w-11 rounded-xl bg-brand-yellow" />
-              <h1 className="text-xl font-bold text-stone-900 dark:text-stone-50">
+              <Image src="/logo-mark.png" alt="Sucsynct" width={71} height={65} className="h-11 w-auto" priority />
+              <h1 className="text-xl font-bold text-ink dark:text-stone-50">
                 Tell better stories
               </h1>
               <p className="text-sm text-stone-500 dark:text-stone-400">
@@ -129,7 +130,7 @@ export default function OnboardingPage() {
               </ol>
               <button
                 onClick={() => setStep(1)}
-                className="mt-2 rounded-none bg-brand-yellow px-6 py-2.5 text-sm font-semibold text-stone-900 hover:bg-brand-yellow-dark"
+                className="mt-2 rounded-none btn-underline bg-brand-yellow px-5 py-2 text-xs font-semibold text-on-accent hover:bg-brand-yellow-dark"
               >
                 Get started
               </button>
@@ -138,7 +139,7 @@ export default function OnboardingPage() {
 
           {step === 1 && (
             <div className="flex flex-col gap-5">
-              <h2 className="text-lg font-bold text-stone-900 dark:text-stone-50">
+              <h2 className="text-lg font-bold text-ink dark:text-stone-50">
                 What are you working on?
               </h2>
               <div className="flex flex-wrap gap-2">
@@ -180,7 +181,7 @@ export default function OnboardingPage() {
                     }
                   }}
                   placeholder="Not listed? Add your own…"
-                  className="flex-1 rounded-full border border-dashed border-stone-300 bg-transparent px-3.5 py-1.5 text-xs text-stone-900 placeholder:text-stone-400 focus:border-brand-orange focus:outline-none dark:border-stone-700 dark:text-stone-100"
+                  className="flex-1 rounded-full border border-dashed border-stone-300 bg-transparent px-3.5 py-1.5 text-xs text-ink placeholder:text-stone-400 focus:border-brand-orange focus:outline-none dark:border-stone-700 dark:text-stone-100"
                 />
                 <button
                   type="button"
@@ -195,7 +196,7 @@ export default function OnboardingPage() {
               <button
                 onClick={() => setStep(2)}
                 disabled={focus.length === 0}
-                className="self-end rounded-none bg-brand-yellow px-6 py-2.5 text-sm font-semibold text-stone-900 hover:bg-brand-yellow-dark disabled:cursor-not-allowed disabled:opacity-40"
+                className="self-end rounded-none btn-underline bg-brand-yellow px-5 py-2 text-xs font-semibold text-on-accent hover:bg-brand-yellow-dark disabled:cursor-not-allowed disabled:opacity-40"
               >
                 Continue
               </button>
@@ -204,7 +205,7 @@ export default function OnboardingPage() {
 
           {step === 2 && (
             <div className="flex flex-col gap-4">
-              <h2 className="text-lg font-bold text-stone-900 dark:text-stone-50">
+              <h2 className="text-lg font-bold text-ink dark:text-stone-50">
                 60-second warm-up
               </h2>
               <p className="text-sm text-stone-500 dark:text-stone-400">
@@ -215,7 +216,7 @@ export default function OnboardingPage() {
                 onChange={(e) => setWarmup(e.target.value)}
                 rows={6}
                 placeholder="Type your story here — recording comes to the full app..."
-                className="w-full resize-none rounded-xl border border-stone-300 bg-transparent p-3 text-sm text-stone-900 placeholder:text-stone-400 focus:border-brand-orange focus:outline-none dark:border-stone-700 dark:text-stone-100"
+                className="w-full resize-none rounded-xl border border-stone-300 bg-transparent p-3 text-sm text-ink placeholder:text-stone-400 focus:border-brand-orange focus:outline-none dark:border-stone-700 dark:text-stone-100"
               />
               <p className="text-xs text-stone-400 dark:text-stone-500">
                 Type it here for now. In the full app you can also record your voice or upload
@@ -224,7 +225,7 @@ export default function OnboardingPage() {
               <button
                 onClick={handleCapture}
                 disabled={!warmup.trim() || scoring}
-                className="self-end rounded-none bg-brand-yellow px-6 py-2.5 text-sm font-semibold text-stone-900 hover:bg-brand-yellow-dark disabled:cursor-not-allowed disabled:opacity-40"
+                className="self-end rounded-none btn-underline bg-brand-yellow px-5 py-2 text-xs font-semibold text-on-accent hover:bg-brand-yellow-dark disabled:cursor-not-allowed disabled:opacity-40"
               >
                 {scoring ? "Scoring…" : "See my feedback"}
               </button>
@@ -233,7 +234,7 @@ export default function OnboardingPage() {
 
           {step === 3 && firstScore && (
             <div className="flex flex-col gap-4">
-              <h2 className="text-lg font-bold text-stone-900 dark:text-stone-50">
+              <h2 className="text-lg font-bold text-ink dark:text-stone-50">
                 Nice start.
               </h2>
               <div className="flex items-center gap-3 rounded-xl bg-stone-100 p-4 dark:bg-stone-800">
@@ -255,7 +256,7 @@ export default function OnboardingPage() {
               </p>
               <button
                 onClick={finish}
-                className="self-end rounded-none bg-brand-yellow px-6 py-2.5 text-sm font-semibold text-stone-900 hover:bg-brand-yellow-dark"
+                className="self-end rounded-none btn-underline bg-brand-yellow px-5 py-2 text-xs font-semibold text-on-accent hover:bg-brand-yellow-dark"
               >
                 Go to dashboard
               </button>

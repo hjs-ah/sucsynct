@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -51,8 +52,8 @@ export default function SignupPage() {
     <div className="flex min-h-screen items-center justify-center bg-stone-50 px-6 dark:bg-stone-950">
       <div className="w-full max-w-md">
         <div className="mb-6 flex flex-col items-center gap-2 text-center">
-          <div className="h-10 w-10 rounded-xl bg-brand-yellow" />
-          <h1 className="text-lg font-bold text-stone-900 dark:text-stone-50">
+          <Image src="/logo-mark.png" alt="Sucsynct" width={71} height={65} className="h-10 w-auto" priority />
+          <h1 className="text-lg font-bold text-ink dark:text-stone-50">
             Create your account
           </h1>
           <p className="text-sm text-stone-500 dark:text-stone-400">
@@ -63,7 +64,7 @@ export default function SignupPage() {
         <div className="rounded-2xl border border-stone-200 bg-white p-8 dark:border-stone-800 dark:bg-stone-900">
           {checkEmail ? (
             <div className="flex flex-col items-center gap-2 py-4 text-center">
-              <p className="text-sm font-semibold text-stone-900 dark:text-stone-50">
+              <p className="text-sm font-semibold text-ink dark:text-stone-50">
                 Check your email
               </p>
               <p className="text-sm text-stone-500 dark:text-stone-400">
@@ -78,7 +79,7 @@ export default function SignupPage() {
                   type="button"
                   disabled
                   title="Google sign-up is coming soon — needs a one-time setup in the Supabase dashboard"
-                  className="flex h-10 cursor-not-allowed items-center justify-center gap-2 rounded-none border border-stone-300 text-sm font-semibold text-stone-400 dark:border-stone-700 dark:text-stone-600"
+                  className="flex h-[34px] cursor-not-allowed items-center justify-center gap-2 rounded-none btn-underline text-xs font-semibold text-stone-400 dark:text-stone-600"
                 >
                   Continue with Google
                   <span className="text-[10px] font-bold uppercase tracking-wide text-stone-400 dark:text-stone-600">
@@ -89,7 +90,7 @@ export default function SignupPage() {
                   type="button"
                   disabled
                   title="Apple sign-up is coming soon — needs a one-time setup in the Supabase dashboard"
-                  className="flex h-10 cursor-not-allowed items-center justify-center gap-2 rounded-none border border-stone-300 text-sm font-semibold text-stone-400 dark:border-stone-700 dark:text-stone-600"
+                  className="flex h-[34px] cursor-not-allowed items-center justify-center gap-2 rounded-none btn-underline text-xs font-semibold text-stone-400 dark:text-stone-600"
                 >
                   Continue with Apple
                   <span className="text-[10px] font-bold uppercase tracking-wide text-stone-400 dark:text-stone-600">
@@ -111,7 +112,7 @@ export default function SignupPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="Email"
-                  className="w-full rounded-lg border border-stone-300 bg-transparent px-3 py-2.5 text-sm text-stone-900 placeholder:text-stone-400 focus:border-brand-orange focus:outline-none dark:border-stone-700 dark:text-stone-100"
+                  className="w-full rounded-lg border border-stone-300 bg-transparent px-3 py-2.5 text-sm text-ink placeholder:text-stone-400 focus:border-brand-orange focus:outline-none dark:border-stone-700 dark:text-stone-100"
                 />
                 <input
                   type="password"
@@ -120,13 +121,13 @@ export default function SignupPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Password (6+ characters)"
-                  className="w-full rounded-lg border border-stone-300 bg-transparent px-3 py-2.5 text-sm text-stone-900 placeholder:text-stone-400 focus:border-brand-orange focus:outline-none dark:border-stone-700 dark:text-stone-100"
+                  className="w-full rounded-lg border border-stone-300 bg-transparent px-3 py-2.5 text-sm text-ink placeholder:text-stone-400 focus:border-brand-orange focus:outline-none dark:border-stone-700 dark:text-stone-100"
                 />
                 {error && <p className="text-xs text-red-500">{error}</p>}
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="mt-1 flex h-11 w-full items-center justify-center rounded-none bg-brand-yellow text-sm font-semibold text-stone-900 hover:bg-brand-yellow-dark disabled:cursor-not-allowed disabled:opacity-60"
+                  className="mt-1 flex h-9 w-full items-center justify-center rounded-none btn-underline bg-brand-yellow text-xs font-semibold text-on-accent hover:bg-brand-yellow-dark disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   {submitting ? "Creating account…" : "Create account"}
                 </button>

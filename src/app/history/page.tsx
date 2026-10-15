@@ -2,8 +2,10 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { AnimatedNumber } from "@/components/animated-number";
 import { NavBar } from "@/components/nav-bar";
 import { TourOverlay, type TourStep } from "@/components/tour";
+import { storySnippet, timeAgo } from "@/lib/format";
 import { getEntries } from "@/lib/storage";
 import type { Entry } from "@/lib/types";
 
@@ -64,7 +66,7 @@ export default function HistoryPage() {
     <div className="min-h-screen">
       <NavBar />
       <main className="mx-auto max-w-2xl px-6 py-10">
-        <h1 className="mb-6 text-xl font-bold text-stone-900 dark:text-stone-50">History</h1>
+        <h1 className="mb-6 text-xl font-bold text-ink dark:text-stone-50">History</h1>
 
         <div id="tour-history-content">
         {entries.length === 0 ? (
@@ -74,19 +76,19 @@ export default function HistoryPage() {
             </p>
             <Link
               href="/new"
-              className="mt-4 inline-block rounded-none bg-brand-yellow px-4 py-2 text-sm font-semibold text-stone-900 hover:bg-brand-yellow-dark"
+              className="mt-4 inline-block rounded-none btn-underline bg-brand-yellow px-3.5 py-1.5 text-xs font-semibold text-on-accent hover:bg-brand-yellow-dark"
             >
               New entry
             </Link>
           </div>
         ) : (
-          <div className="flex flex-col gap-8">
+          <div className="flex flex-col gap-8 divide-y divide-stone-200 dark:divide-stone-800 [&>div:not(:first-child)]:pt-8">
             {groups.map(([date, dayEntries]) => (
               <div key={date}>
                 <h2 className="mb-3 text-xs font-bold uppercase tracking-wide text-stone-500 dark:text-stone-400">
                   {date}
                 </h2>
-                <ul className="flex flex-col gap-2.5">
+                <ul className="flex flex-col gap-4">
                   {dayEntries.map((entry) => {
                     flatCounter += 1;
                     const delta = deltaFor(0, flatCounter);
@@ -96,11 +98,11 @@ export default function HistoryPage() {
                           href={`/entry/${entry.id}`}
                           className="flex items-center gap-4 rounded-xl border border-stone-200 p-4 transition-colors hover:border-stone-300 dark:border-stone-800 dark:hover:border-stone-700"
                         >
-                          <div className="flex-1">
-                            <p className="line-clamp-1 text-sm font-medium text-stone-900 dark:text-stone-100">
-                              {entry.text.slice(0, 80) || "(empty)"}
+                          <div className="min-w-0 flex-1">
+                            <p className="truncate text-sm font-medium text-ink dark:text-stone-100">
+                              {storySnippet(entry)}
                             </p>
-                            <p className="mt-1 text-xs text-stone-500 dark:text-stone-400">
+                            <p className="mt-1 truncate text-xs text-stone-500 dark:text-stone-400">
                               {entry.mode} &middot; {entry.goal || "no goal set"}
                             </p>
                           </div>
@@ -118,10 +120,14 @@ export default function HistoryPage() {
                               {delta}
                             </span>
                           )}
-                          <div className="text-lg font-bold text-brand-orange">
-                            {entry.scores.overall}
-                          </div>
+                          <AnimatedNumber
+                            value={entry.scores.overall}
+                            className="text-lg font-bold text-brand-orange"
+                          />
                         </Link>
+                        <p className="mt-1.5 px-1 text-xs text-stone-400 dark:text-stone-500">
+                          {timeAgo(entry.createdAt)}
+                        </p>
                       </li>
                     );
                   })}

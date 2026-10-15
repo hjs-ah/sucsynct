@@ -117,6 +117,45 @@ const OPPORTUNITY_PHRASES: Record<Dimension, string> = {
   voice: "let more of how you'd actually say this come through",
 };
 
+const STRONG_DETAIL: Record<Dimension, string> = {
+  messageClarity: "A reader can tell what you want them to take away without hunting for it.",
+  structure: "It has a recognizable shape: a way in, a turn, and somewhere to land.",
+  brevity: "Sentences earn their place. Nothing here feels padded.",
+  specificity: "Concrete details do the persuading instead of general claims.",
+  audienceFit: "It reads as though it was written for a particular listener.",
+  voice: "It sounds like a person talking, not a template.",
+};
+
+const IMPROVE_DETAIL: Record<Dimension, string> = {
+  messageClarity: "State the one takeaway up front, in a single plain sentence, then support it.",
+  structure: "Give it a clearer beginning, a moment where something changes, and a deliberate ending.",
+  brevity: "Cut anything that doesn't serve the one thing you want remembered, then cut a little more.",
+  specificity: "Replace one general claim with a number, a name, or a moment someone could picture.",
+  audienceFit: "Say who this is for and what they care about earlier, so the stakes are clear sooner.",
+  voice: "Keep the phrases you'd actually say out loud and drop the ones that sound like a form letter.",
+};
+
+function strongestAndWeakest(dimensions: Record<Dimension, number>) {
+  const strongest = DIMENSION_ORDER.reduce((best, d) =>
+    dimensions[d] > dimensions[best] ? d : best
+  , DIMENSION_ORDER[0]);
+  const weakest = DIMENSION_ORDER.reduce((worst, d) =>
+    dimensions[d] < dimensions[worst] ? d : worst
+  , DIMENSION_ORDER[0]);
+  return { strongest, weakest };
+}
+
+/** Plain-language "Analysis 1 / Analysis 2" built from the dimension scores. */
+export function buildAnalysis(
+  dimensions: Record<Dimension, number>
+): { strong: string; improve: string } {
+  const { strongest, weakest } = strongestAndWeakest(dimensions);
+  return {
+    strong: `${DIMENSION_LABELS[strongest]} is your strongest area. ${STRONG_DETAIL[strongest]}`,
+    improve: `${DIMENSION_LABELS[weakest]} has the most room to grow. ${IMPROVE_DETAIL[weakest]}`,
+  };
+}
+
 function deriveStrengthOpportunity(dimensions: Record<Dimension, number>) {
   const strongest = DIMENSION_ORDER.reduce((best, d) =>
     dimensions[d] > dimensions[best] ? d : best
@@ -139,11 +178,13 @@ function deriveStrengthOpportunity(dimensions: Record<Dimension, number>) {
  * call on.
  */
 export function enrichScore(
-  base: Pick<ScoreResult, "overall" | "dimensions" | "verdict" | "evidence">,
+  base: Pick<ScoreResult, "overall" | "dimensions" | "verdict" | "evidence"> &
+    Partial<Pick<ScoreResult, "analysis" | "summary">>,
   text: string
 ): ScoreResult {
   return {
     ...base,
+    analysis: base.analysis ?? buildAnalysis(base.dimensions),
     ...deriveStrengthOpportunity(base.dimensions),
     ...analyzeLanguage(text),
   };
@@ -265,6 +306,7 @@ Respond with ONLY valid JSON, no markdown fences, matching exactly this shape:
     "voice": number
   },
   "verdict": "one sentence naming the single most useful thing to fix next",
-  "evidence": "one short quoted excerpt from the piece plus a brief note on why it matters"
+  "analysisStrong": "two plain sentences on what is strong about the piece, quoting a short excerpt if it helps",
+  "analysisImprove": "two plain sentences on what could improve and how, quoting a short excerpt if it helps"
 }`;
 }

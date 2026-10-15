@@ -40,7 +40,7 @@ export default function NotesPage() {
     <div className="min-h-screen">
       <NavBar />
       <main className="mx-auto max-w-2xl px-6 py-10">
-        <h1 className="mb-1 text-xl font-bold text-stone-900 dark:text-stone-50">
+        <h1 className="mb-1 text-xl font-bold text-ink dark:text-stone-50">
           Quick notes
         </h1>
         <p className="mb-6 text-sm text-stone-500 dark:text-stone-400">
@@ -56,21 +56,21 @@ export default function NotesPage() {
           }}
           rows={10}
           placeholder="Dump a rough version here — a few sentences is plenty..."
-          className="w-full resize-none rounded-xl border border-stone-300 bg-transparent p-4 text-sm text-stone-900 placeholder:text-stone-400 focus:border-brand-orange focus:outline-none dark:border-stone-700 dark:text-stone-100"
+          className="w-full resize-none rounded-xl border border-stone-300 bg-transparent p-4 text-sm text-ink placeholder:text-stone-400 focus:border-brand-orange focus:outline-none dark:border-stone-700 dark:text-stone-100"
         />
 
         <div className="mt-3 flex flex-wrap gap-2">
           <button
             onClick={handleAssess}
             disabled={!text.trim()}
-            className="flex h-10 items-center justify-center rounded-none bg-brand-yellow px-4 text-sm font-semibold text-stone-900 hover:bg-brand-yellow-dark disabled:cursor-not-allowed disabled:opacity-40"
+            className="flex h-[34px] items-center justify-center rounded-none btn-underline bg-brand-yellow px-3.5 text-xs font-semibold text-on-accent hover:bg-brand-yellow-dark disabled:cursor-not-allowed disabled:opacity-40"
           >
             Get a quick read
           </button>
           <button
             onClick={handlePromote}
             disabled={!text.trim()}
-            className="flex h-10 items-center justify-center rounded-none border border-stone-300 px-4 text-sm font-semibold text-stone-700 hover:border-stone-400 disabled:cursor-not-allowed disabled:opacity-40 dark:border-stone-700 dark:text-stone-300"
+            className="flex h-[34px] items-center justify-center rounded-none btn-underline px-3.5 text-xs font-semibold text-stone-700 disabled:cursor-not-allowed disabled:opacity-40 dark:text-stone-300"
           >
             Full analysis
           </button>

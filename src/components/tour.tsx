@@ -131,7 +131,7 @@ export function TourOverlay({ tourId, steps }: { tourId: string; steps: TourStep
         }}
       >
         <div className="flex items-start justify-between gap-2">
-          <p className="text-sm font-bold text-stone-900 dark:text-stone-50">{step.title}</p>
+          <p className="text-sm font-bold text-ink dark:text-stone-50">{step.title}</p>
           <button
             type="button"
             onClick={finish}
@@ -157,7 +157,7 @@ export function TourOverlay({ tourId, steps }: { tourId: string; steps: TourStep
           <button
             type="button"
             onClick={next}
-            className="rounded-none bg-brand-yellow px-3 py-1.5 text-xs font-semibold text-stone-900 hover:bg-brand-yellow-dark"
+            className="rounded-none btn-underline bg-brand-yellow px-2.5 py-1.5 text-xs font-semibold text-on-accent hover:bg-brand-yellow-dark"
           >
             {index + 1 >= steps.length ? "Done" : "Next"}
           </button>

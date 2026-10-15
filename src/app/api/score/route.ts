@@ -1,5 +1,28 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { buildScoringPrompt, enrichScore, mockScore } from "@/lib/rubric";
+
+// Short card summaries are cheap, so they use Haiku regardless of which
+// model does the scoring. Override with ANTHROPIC_SUMMARY_MODEL.
+async function summarize(anthropic: Anthropic, text: string): Promise<string | undefined> {
+  try {
+    const message = await anthropic.messages.create({
+      model: process.env.ANTHROPIC_SUMMARY_MODEL || "claude-haiku-5-5",
+      max_tokens: 60,
+      messages: [
+        {
+          role: "user",
+          content: `Summarize this in 60 characters or fewer, as a short phrase that says what the story is about. Plain text only: no quotes, no ending punctuation.\n\n"""\n${text.slice(0, 4000)}\n"""`,
+        },
+      ],
+    });
+    const block = message.content.find((c) => c.type === "text");
+    const out = block && "text" in block ? block.text.trim().replace(/^["']|["']$/g, "") : "";
+    return out ? out.slice(0, 70) : undefined;
+  } catch (err) {
+    console.error("Summary via Haiku failed:", err);
+    return undefined;
+  }
+}
 import { DIMENSION_ORDER, type AnalyzerStrictness, type ScoreResult } from "@/lib/types";
 
 const VALID_STRICTNESS: AnalyzerStrictness[] = ["supportive", "moderate", "strict"];
@@ -36,15 +59,21 @@ export async function POST(request: Request) {
     const anthropic = new Anthropic({ apiKey });
     const model = process.env.ANTHROPIC_MODEL || "claude-sonnet-4-5-20250929";
 
-    const message = await anthropic.messages.create({
-      model,
-      max_tokens: 700,
-      messages: [{ role: "user", content: buildScoringPrompt(text, audience, goal, strictness) }],
-    });
+    const [message, summary] = await Promise.all([
+      anthropic.messages.create({
+        model,
+        max_tokens: 900,
+        messages: [{ role: "user", content: buildScoringPrompt(text, audience, goal, strictness) }],
+      }),
+      summarize(anthropic, text),
+    ]);
 
     const block = message.content.find((c) => c.type === "text");
     const raw = block && "text" in block ? block.text : "";
-    const parsed = JSON.parse(raw) as ScoreResult;
+    const parsed = JSON.parse(raw) as ScoreResult & {
+      analysisStrong?: string;
+      analysisImprove?: string;
+    };
 
     // Guard against a malformed response before trusting it.
     const hasAllDimensions = DIMENSION_ORDER.every(
@@ -58,7 +87,21 @@ export async function POST(request: Request) {
     // deterministic text analysis, computed locally either way — no need
     // to ask the model for them, and it keeps mock vs. Claude scores
     // directly comparable.
-    const scores = enrichScore(parsed, text);
+    const analysis =
+      parsed.analysisStrong && parsed.analysisImprove
+        ? { strong: parsed.analysisStrong, improve: parsed.analysisImprove }
+        : undefined;
+    const scores = enrichScore(
+      {
+        overall: parsed.overall,
+        dimensions: parsed.dimensions,
+        verdict: parsed.verdict,
+        evidence: parsed.analysisStrong ?? parsed.evidence ?? "",
+        analysis,
+        summary,
+      },
+      text
+    );
 
     return Response.json({ scores, source: "claude" });
   } catch (err) {

@@ -3,9 +3,12 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import { AnimatedNumber } from "@/components/animated-number";
 import { FlameIcon } from "@/components/icons";
 import { NavBar } from "@/components/nav-bar";
+import { SignOutButton } from "@/components/sign-out-button";
 import { TourOverlay, type TourStep } from "@/components/tour";
+import { storySnippet, timeAgo } from "@/lib/format";
 import { getBenchmarkEntry, getEntries, getPreferences } from "@/lib/storage";
 import type { Entry } from "@/lib/types";
 
@@ -23,16 +26,6 @@ const HOME_TOUR: TourStep[] = [
 ];
 
 type SortBy = "date" | "story";
-
-function timeAgo(iso: string) {
-  const diff = Date.now() - new Date(iso).getTime();
-  const mins = Math.floor(diff / 60000);
-  if (mins < 60) return `${Math.max(mins, 1)}m ago`;
-  const hours = Math.floor(mins / 60);
-  if (hours < 24) return `${hours}h ago`;
-  const days = Math.floor(hours / 24);
-  return `${days}d ago`;
-}
 
 function dayKeyFromDate(d: Date) {
   return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
@@ -121,28 +114,25 @@ export default function HomePage() {
     <div className="min-h-screen">
       <NavBar />
       <main className="mx-auto max-w-3xl px-6 py-10">
-        <div className="mb-8 flex items-center justify-between">
-          <div>
-            <h1 className="text-xl font-bold text-stone-900 dark:text-stone-50">
-              Your stories
-            </h1>
+        <div className="mb-6 flex items-end justify-between gap-3">
+          <div className="min-w-0">
+            <h1 className="text-xl font-bold text-ink dark:text-stone-50">Your stories</h1>
             <p className="text-sm text-stone-500 dark:text-stone-400">
               {entries.length === 0
                 ? "Nothing here yet."
                 : `${entries.length} ${entries.length === 1 ? "entry" : "entries"} so far.`}
             </p>
           </div>
-          <div className="flex shrink-0 gap-2">
+          <div className="flex shrink-0 gap-1.5">
             <Link
               href="/notes"
-              className="rounded-none border border-stone-300 px-4 py-2.5 text-sm font-semibold text-stone-600 transition-colors hover:border-stone-400 dark:border-stone-700 dark:text-stone-300"
+              className="rounded-none btn-underline px-3 py-1.5 text-xs font-semibold text-stone-600 dark:text-stone-300"
             >
               Quick notes
             </Link>
             <Link
-              id="tour-new-entry-btn"
               href="/new"
-              className="rounded-none bg-brand-yellow px-4 py-2.5 text-sm font-semibold text-stone-900 transition-colors hover:bg-brand-yellow-dark"
+              className="rounded-none btn-underline bg-brand-yellow px-3 py-1.5 text-xs font-semibold text-on-accent transition-colors hover:bg-brand-yellow-dark"
             >
               + New entry
             </Link>
@@ -150,7 +140,7 @@ export default function HomePage() {
         </div>
 
         {streak > 0 && (
-          <div className="mb-6 flex items-center gap-2 rounded-xl border border-brand-orange/30 bg-brand-orange/5 px-4 py-2.5">
+          <div className="mb-2 flex items-center gap-2 rounded-xl border border-brand-orange/30 bg-brand-orange/5 px-4 py-2.5">
             <FlameIcon className="h-5 w-5 shrink-0 text-brand-orange" />
             <p className="text-sm font-semibold text-stone-800 dark:text-stone-200">
               {streak}-day streak
@@ -168,14 +158,14 @@ export default function HomePage() {
             </p>
             <Link
               href="/new"
-              className="mt-4 inline-block rounded-none bg-brand-yellow px-4 py-2 text-sm font-semibold text-stone-900 hover:bg-brand-yellow-dark"
+              className="mt-4 inline-block rounded-none btn-underline bg-brand-yellow px-3.5 py-1.5 text-xs font-semibold text-on-accent hover:bg-brand-yellow-dark"
             >
               Start now
             </Link>
           </div>
         ) : (
           <>
-            <div className="mb-4 flex items-center justify-between">
+            <div className="mb-4 mt-6 flex items-center justify-between border-t border-stone-200 pt-6 dark:border-stone-800">
               <h2 className="text-xs font-bold uppercase tracking-wide text-stone-500 dark:text-stone-400">
                 Recent stories
               </h2>
@@ -184,7 +174,7 @@ export default function HomePage() {
                   onClick={() => setSortBy("date")}
                   className={`px-3 py-1 text-xs font-semibold ${
                     sortBy === "date"
-                      ? "bg-brand-yellow text-stone-900"
+                      ? "bg-brand-yellow text-on-accent"
                       : "bg-white text-stone-600 dark:bg-stone-900 dark:text-stone-300"
                   }`}
                 >
@@ -194,7 +184,7 @@ export default function HomePage() {
                   onClick={() => setSortBy("story")}
                   className={`border-l border-stone-300 px-3 py-1 text-xs font-semibold dark:border-stone-700 ${
                     sortBy === "story"
-                      ? "bg-brand-yellow text-stone-900"
+                      ? "bg-brand-yellow text-on-accent"
                       : "bg-white text-stone-600 dark:bg-stone-900 dark:text-stone-300"
                   }`}
                 >
@@ -203,32 +193,35 @@ export default function HomePage() {
               </div>
             </div>
 
-            <ul className="mb-8 flex flex-col gap-3">
+            <ul className="flex flex-col gap-4">
               {sorted.map((entry) => (
                 <li key={entry.id}>
                   <Link
                     href={`/entry/${entry.id}`}
                     className="flex items-center gap-4 rounded-xl border border-stone-200 p-4 transition-colors hover:border-stone-300 dark:border-stone-800 dark:hover:border-stone-700"
                   >
-                    <div className="flex-1">
-                      <p className="line-clamp-1 text-sm font-medium text-stone-900 dark:text-stone-100">
-                        {entry.text.slice(0, 80) || "(empty)"}
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-medium text-ink dark:text-stone-100">
+                        {storySnippet(entry)}
                       </p>
-                      <p className="mt-1 text-xs text-stone-500 dark:text-stone-400">
-                        {entry.mode} &middot; {entry.goal || "no goal set"} &middot;{" "}
-                        {timeAgo(entry.createdAt)}
+                      <p className="mt-1 truncate text-xs text-stone-500 dark:text-stone-400">
+                        {entry.mode} &middot; {entry.goal || "no goal set"}
                       </p>
                     </div>
-                    <div className="text-lg font-bold text-brand-orange">
-                      {entry.scores.overall}
-                    </div>
+                    <AnimatedNumber
+                      value={entry.scores.overall}
+                      className="text-lg font-bold text-brand-orange"
+                    />
                   </Link>
+                  <p className="mt-1.5 px-1 text-xs text-stone-400 dark:text-stone-500">
+                    {timeAgo(entry.createdAt)}
+                  </p>
                 </li>
               ))}
             </ul>
 
             {monthly && (
-              <div className="flex flex-col gap-3">
+              <div className="mt-8 flex flex-col gap-3 border-t border-stone-200 pt-6 dark:border-stone-800">
                 <div className="flex items-center justify-between">
                   <h2 className="text-xs font-bold uppercase tracking-wide text-stone-500 dark:text-stone-400">
                     This month&rsquo;s Tells
@@ -246,8 +239,8 @@ export default function HomePage() {
                       background: `conic-gradient(var(--brand-orange) ${monthly.average * 3.6}deg, #e7e5e4 0deg)`,
                     }}
                   >
-                    <div className="flex h-11 w-11 items-center justify-center rounded-full bg-white text-sm font-extrabold text-stone-900 dark:bg-stone-950 dark:text-stone-50">
-                      {monthly.average}
+                    <div className="flex h-11 w-11 items-center justify-center rounded-full bg-white text-sm font-extrabold text-ink dark:bg-stone-950 dark:text-stone-50">
+                      <AnimatedNumber value={monthly.average} />
                     </div>
                   </div>
                   <div className="flex h-14 flex-1 items-end gap-1.5">
@@ -267,6 +260,10 @@ export default function HomePage() {
             )}
           </>
         )}
+
+        <div className="mt-10 border-t border-stone-200 pt-6 dark:border-stone-800">
+          <SignOutButton />
+        </div>
       </main>
       <TourOverlay tourId="home" steps={HOME_TOUR} />
     </div>

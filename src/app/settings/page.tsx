@@ -88,16 +88,16 @@ export default function SettingsPage() {
     <div className="min-h-screen">
       <NavBar />
       <main className="mx-auto max-w-2xl px-6 py-10">
-        <h1 className="mb-8 text-xl font-bold text-stone-900 dark:text-stone-50">Settings</h1>
+        <h1 className="mb-8 text-xl font-bold text-ink dark:text-stone-50">Settings</h1>
 
-        <section className="mb-8">
+        <section className="mt-6 border-t border-stone-200 pt-6 dark:border-stone-800">
           <h2 className="mb-3 text-xs font-bold uppercase tracking-wide text-stone-500 dark:text-stone-400">
             Appearance
           </h2>
           <div className="rounded-2xl border border-stone-200 bg-white p-5 dark:border-stone-800 dark:bg-stone-900">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-stone-900 dark:text-stone-100">Theme</p>
+                <p className="text-sm font-medium text-ink dark:text-stone-100">Theme</p>
                 <p className="text-xs text-stone-500 dark:text-stone-400">
                   Defaults to your system setting.
                 </p>
@@ -107,14 +107,14 @@ export default function SettingsPage() {
           </div>
         </section>
 
-        <section className="mb-8">
+        <section className="mt-6 border-t border-stone-200 pt-6 dark:border-stone-800">
           <h2 className="mb-3 text-xs font-bold uppercase tracking-wide text-stone-500 dark:text-stone-400">
             Guided tour
           </h2>
           <div className="rounded-2xl border border-stone-200 bg-white p-5 dark:border-stone-800 dark:bg-stone-900">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-stone-900 dark:text-stone-100">
+                <p className="text-sm font-medium text-ink dark:text-stone-100">
                   Replay the first-visit walkthroughs
                 </p>
                 <p className="text-xs text-stone-500 dark:text-stone-400">
@@ -127,7 +127,7 @@ export default function SettingsPage() {
                   resetTours();
                   setToursReset(true);
                 }}
-                className="shrink-0 rounded-none border border-stone-300 px-3 py-1.5 text-xs font-semibold text-stone-600 hover:border-stone-400 dark:border-stone-700 dark:text-stone-300"
+                className="shrink-0 rounded-none btn-underline px-2.5 py-1.5 text-xs font-semibold text-stone-600 dark:text-stone-300"
               >
                 {toursReset ? "Reset" : "Replay tours"}
               </button>
@@ -135,12 +135,12 @@ export default function SettingsPage() {
           </div>
         </section>
 
-        <section id="tour-account-settings" className="mb-8">
+        <section id="tour-account-settings" className="mt-6 border-t border-stone-200 pt-6 dark:border-stone-800">
           <h2 className="mb-3 text-xs font-bold uppercase tracking-wide text-stone-500 dark:text-stone-400">
             Account
           </h2>
           <div className="rounded-2xl border border-stone-200 bg-white p-5 dark:border-stone-800 dark:bg-stone-900">
-            <p className="mb-3 text-sm text-stone-900 dark:text-stone-100">
+            <p className="mb-3 text-sm text-ink dark:text-stone-100">
               {prefs.email || "Signed out — stories are saved on this device only."}
             </p>
             <div className="mb-3 flex flex-wrap gap-1.5">
@@ -170,7 +170,7 @@ export default function SettingsPage() {
                   }
                 }}
                 placeholder="Add a focus area…"
-                className="flex-1 rounded-full border border-dashed border-stone-300 bg-transparent px-3 py-1 text-xs text-stone-900 placeholder:text-stone-400 focus:border-brand-orange focus:outline-none dark:border-stone-700 dark:text-stone-100"
+                className="flex-1 rounded-full border border-dashed border-stone-300 bg-transparent px-3 py-1 text-xs text-ink placeholder:text-stone-400 focus:border-brand-orange focus:outline-none dark:border-stone-700 dark:text-stone-100"
               />
               <button
                 type="button"
@@ -189,12 +189,12 @@ export default function SettingsPage() {
           </div>
         </section>
 
-        <section id="tour-analyzer-settings" className="mb-8">
+        <section id="tour-analyzer-settings" className="mt-6 border-t border-stone-200 pt-6 dark:border-stone-800">
           <h2 className="mb-3 text-xs font-bold uppercase tracking-wide text-stone-500 dark:text-stone-400">
             Analyzer
           </h2>
           <div className="rounded-2xl border border-stone-200 bg-white p-5 dark:border-stone-800 dark:bg-stone-900">
-            <p className="mb-1 text-sm font-medium text-stone-900 dark:text-stone-100">
+            <p className="mb-1 text-sm font-medium text-ink dark:text-stone-100">
               Feedback strictness
             </p>
             <p className="mb-3 text-xs text-stone-500 dark:text-stone-400">
@@ -207,14 +207,14 @@ export default function SettingsPage() {
           </div>
         </section>
 
-        <section className="mb-8">
+        <section className="mt-6 border-t border-stone-200 pt-6 dark:border-stone-800">
           <h2 className="mb-3 text-xs font-bold uppercase tracking-wide text-stone-500 dark:text-stone-400">
             Privacy
           </h2>
           <div className="rounded-2xl border border-stone-200 bg-white p-5 dark:border-stone-800 dark:bg-stone-900">
             <label className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-stone-900 dark:text-stone-100">
+                <p className="text-sm font-medium text-ink dark:text-stone-100">
                   Auto-delete audio after transcription
                 </p>
                 <p className="text-xs text-stone-500 dark:text-stone-400">
@@ -238,7 +238,7 @@ export default function SettingsPage() {
           </div>
         </section>
 
-        <section>
+        <section className="mt-6 border-t border-stone-200 pt-6 dark:border-stone-800">
           <h2 className="mb-3 text-xs font-bold uppercase tracking-wide text-red-500">
             Danger zone
           </h2>
@@ -248,7 +248,7 @@ export default function SettingsPage() {
             </p>
             <button
               onClick={handleClear}
-              className="rounded-none border border-red-300 px-4 py-2 text-sm font-semibold text-red-600 hover:bg-red-100 dark:border-red-800 dark:hover:bg-red-950/40"
+              className="rounded-none btn-underline border border-red-300 px-3.5 py-1.5 text-xs font-semibold text-red-600 hover:bg-red-100 dark:border-red-800 dark:hover:bg-red-950/40"
             >
               {confirmClear ? "Click again to confirm" : "Delete account & data"}
             </button>

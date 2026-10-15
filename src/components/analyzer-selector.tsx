@@ -23,8 +23,17 @@ export function AnalyzerSelector({
   const index = OPTIONS.indexOf(value);
 
   return (
+    <div className={className}>
+    <p className="mb-2 flex items-baseline justify-between text-xs">
+      <span className="font-bold uppercase tracking-wide text-stone-500 dark:text-stone-400">
+        Analysis strength
+      </span>
+      <span className="font-semibold text-ink dark:text-stone-100">
+        {STRICTNESS_LABELS[value]}
+      </span>
+    </p>
     <div
-      className={`relative grid grid-cols-3 overflow-hidden rounded-none border border-stone-300 dark:border-stone-700 ${className}`}
+      className="relative grid grid-cols-3 overflow-hidden rounded-none border border-stone-300 dark:border-stone-700"
     >
       <div
         className="absolute inset-y-0 left-0 w-1/3 bg-brand-yellow transition-transform duration-300 ease-out"
@@ -40,7 +49,7 @@ export function AnalyzerSelector({
             onClick={() => onChange(opt)}
             className={`relative z-10 px-2 py-3 text-xs font-bold uppercase tracking-wide transition-colors ${
               active
-                ? "text-stone-900"
+                ? "text-on-accent"
                 : "text-stone-500 hover:text-stone-700 dark:text-stone-400 dark:hover:text-stone-200"
             }`}
           >
@@ -48,6 +57,7 @@ export function AnalyzerSelector({
           </button>
         );
       })}
+    </div>
     </div>
   );
 }

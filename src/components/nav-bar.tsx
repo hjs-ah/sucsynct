@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { NavDrawer } from "@/components/nav-drawer";
 import { HomeIcon, PlusIcon } from "@/components/icons";
@@ -20,9 +21,16 @@ export function NavBar() {
 
         <Link
           href="/"
-          className="justify-self-center text-base font-bold tracking-tight text-stone-900 dark:text-stone-50"
+          className="justify-self-center"
         >
-          Sucsynct
+          <Image
+            src="/logo.png"
+            alt="Sucsynct"
+            width={253}
+            height={65}
+            priority
+            className="h-7 w-auto"
+          />
         </Link>
 
         <Link
@@ -30,9 +38,9 @@ export function NavBar() {
           href="/new"
           title="New entry"
           aria-label="New entry"
-          className="flex h-9 shrink-0 items-center gap-1.5 justify-self-end rounded-none bg-brand-yellow px-3.5 text-sm font-semibold text-stone-900 transition-colors hover:bg-brand-yellow-dark"
+          className="flex h-[31px] shrink-0 items-center gap-1.5 justify-self-end rounded-none btn-underline bg-brand-yellow px-3 text-xs font-semibold text-on-accent transition-colors hover:bg-brand-yellow-dark"
         >
-          <PlusIcon className="h-4 w-4 shrink-0" />
+          <PlusIcon className="h-4 w-4 shrink-0 text-on-accent" />
           <span className="hidden sm:inline">New entry</span>
         </Link>
       </div>

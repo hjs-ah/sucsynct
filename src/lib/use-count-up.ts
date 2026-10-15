@@ -3,29 +3,48 @@
 import { useEffect, useState } from "react";
 
 /**
- * Animates a number from 0 up to `target` over `durationMs`, easing out.
- * Used for score numbers that count up on reveal instead of snapping in.
+ * Slot-machine style score reveal: the number first flickers through random
+ * values, then the randomness shrinks as it eases out onto the real score.
+ * Always lands exactly on `target`. Skips the effect for people who prefer
+ * reduced motion.
  */
-export function useCountUp(target: number, durationMs = 700) {
+export function useCountUp(target: number, durationMs = 1100) {
   const [value, setValue] = useState(0);
 
   useEffect(() => {
+    if (
+      typeof window !== "undefined" &&
+      window.matchMedia?.("(prefers-reduced-motion: reduce)").matches
+    ) {
+      setValue(target);
+      return;
+    }
+
     let raf: number;
+    let lastShown = 0;
     const start = performance.now();
 
     function tick(now: number) {
-      const elapsed = now - start;
-      const progress = Math.min(1, elapsed / durationMs);
-      const eased = 1 - Math.pow(1 - progress, 3); // ease-out cubic
-      setValue(Math.round(target * eased));
-      if (progress < 1) {
-        raf = requestAnimationFrame(tick);
+      const progress = Math.min(1, (now - start) / durationMs);
+      if (progress >= 1) {
+        setValue(target);
+        return;
       }
+      // Ease-out cubic: the spread of possible values collapses toward the
+      // target, and the display only refreshes every ~60ms so it reads as a
+      // flicker rather than a blur.
+      const eased = 1 - Math.pow(1 - progress, 3);
+      const spread = (1 - eased) * 100;
+      if (now - lastShown > 60) {
+        lastShown = now;
+        const noisy = target + (Math.random() * 2 - 1) * spread;
+        setValue(Math.max(0, Math.min(100, Math.round(noisy))));
+      }
+      raf = requestAnimationFrame(tick);
     }
 
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [target, durationMs]);
 
   return value;

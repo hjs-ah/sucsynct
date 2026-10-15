@@ -39,7 +39,7 @@ export function AnimatedBar({
           style={{ width: `${width}%` }}
         />
       </div>
-      <div className="w-10 shrink-0 text-right text-xs font-medium text-stone-900 dark:text-stone-100">
+      <div className="w-10 shrink-0 text-right text-xs font-medium text-ink dark:text-stone-100">
         {count}
         {suffix}
       </div>

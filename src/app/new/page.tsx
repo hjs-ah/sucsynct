@@ -369,7 +369,7 @@ export default function NewEntryPage() {
     return (
       <div className="flex min-h-screen items-center justify-center bg-stone-50 px-6 dark:bg-stone-950">
         <div className="w-full max-w-md rounded-2xl border border-stone-200 bg-white p-8 dark:border-stone-800 dark:bg-stone-900">
-          <h1 className="mb-2 text-lg font-bold text-stone-900 dark:text-stone-50">
+          <h1 className="mb-2 text-lg font-bold text-ink dark:text-stone-50">
             Before you see our score —
           </h1>
           <p className="mb-6 text-sm text-stone-500 dark:text-stone-400">
@@ -378,7 +378,7 @@ export default function NewEntryPage() {
 
           <div className="mb-2 flex items-center justify-between">
             <span className="text-xs text-stone-500 dark:text-stone-400">Your guess</span>
-            <span className="text-2xl font-extrabold text-stone-900 dark:text-stone-50">
+            <span className="text-2xl font-extrabold text-ink dark:text-stone-50">
               {selfScore}
             </span>
           </div>
@@ -393,7 +393,7 @@ export default function NewEntryPage() {
 
           <button
             onClick={handleReveal}
-            className="mt-6 w-full rounded-none bg-brand-yellow px-4 py-3 text-sm font-semibold text-stone-900 hover:bg-brand-yellow-dark"
+            className="mt-6 w-full rounded-none btn-underline bg-brand-yellow px-3.5 py-2.5 text-xs font-semibold text-on-accent hover:bg-brand-yellow-dark"
           >
             See my score
           </button>
@@ -437,7 +437,7 @@ export default function NewEntryPage() {
     <div className="min-h-screen">
       <NavBar />
       <main className="mx-auto max-w-2xl px-6 py-10">
-        <h1 className="mb-4 text-xl font-bold text-stone-900 dark:text-stone-50">
+        <h1 className="mb-4 text-xl font-bold text-ink dark:text-stone-50">
           New entry
         </h1>
 
@@ -453,9 +453,9 @@ export default function NewEntryPage() {
               disabled={!m.available}
               onClick={() => m.available && setMode(m.value)}
               title={m.available ? undefined : "Coming soon — text-first prototype"}
-              className={`rounded-none px-4 py-2 text-sm font-semibold transition-colors ${
+              className={`rounded-none btn-underline px-3.5 py-1.5 text-xs font-semibold transition-colors ${
                 mode === m.value
-                  ? "bg-brand-yellow text-stone-900"
+                  ? "bg-brand-yellow text-on-accent"
                   : m.available
                     ? "bg-stone-100 text-stone-600 hover:bg-stone-200 dark:bg-stone-800 dark:text-stone-300"
                     : "cursor-not-allowed bg-stone-100 text-stone-400 dark:bg-stone-900 dark:text-stone-600"
@@ -471,13 +471,13 @@ export default function NewEntryPage() {
             value={audience}
             onChange={(e) => setAudience(e.target.value)}
             placeholder="Audience (e.g. hiring manager)"
-            className="rounded-lg border border-stone-300 bg-transparent px-3 py-2 text-sm text-stone-900 placeholder:text-stone-400 focus:border-brand-orange focus:outline-none dark:border-stone-700 dark:text-stone-100"
+            className="rounded-lg border border-stone-300 bg-transparent px-3 py-2 text-sm text-ink placeholder:text-stone-400 focus:border-brand-orange focus:outline-none dark:border-stone-700 dark:text-stone-100"
           />
           <input
             value={goal}
             onChange={(e) => setGoal(e.target.value)}
             placeholder="Goal (e.g. land the interview)"
-            className="rounded-lg border border-stone-300 bg-transparent px-3 py-2 text-sm text-stone-900 placeholder:text-stone-400 focus:border-brand-orange focus:outline-none dark:border-stone-700 dark:text-stone-100"
+            className="rounded-lg border border-stone-300 bg-transparent px-3 py-2 text-sm text-ink placeholder:text-stone-400 focus:border-brand-orange focus:outline-none dark:border-stone-700 dark:text-stone-100"
           />
         </div>
 
@@ -522,7 +522,7 @@ export default function NewEntryPage() {
               <button
                 type="button"
                 onClick={handleRecord}
-                className="flex h-12 items-center justify-center gap-2 rounded-none bg-red-600 text-sm font-semibold text-white hover:bg-red-700"
+                className="flex h-10 items-center justify-center gap-2 rounded-none btn-underline bg-red-600 text-xs font-semibold text-white hover:bg-red-700"
               >
                 <MicIcon className="h-4 w-4" />
                 Record
@@ -534,7 +534,7 @@ export default function NewEntryPage() {
                 <button
                   type="button"
                   onClick={recordingState === "recording" ? handlePause : handleResume}
-                  className="flex h-11 flex-1 items-center justify-center gap-2 rounded-none border border-stone-300 text-sm font-semibold text-stone-700 hover:bg-stone-100 dark:border-stone-700 dark:text-stone-200 dark:hover:bg-stone-800"
+                  className="flex h-9 flex-1 items-center justify-center gap-2 rounded-none btn-underline text-xs font-semibold text-stone-700 hover:bg-stone-100 dark:text-stone-200 dark:hover:bg-stone-800"
                 >
                   {recordingState === "recording" ? (
                     <>
@@ -551,7 +551,7 @@ export default function NewEntryPage() {
                 <button
                   type="button"
                   onClick={handleStop}
-                  className="flex h-11 flex-1 items-center justify-center gap-2 rounded-none bg-stone-900 text-sm font-semibold text-white hover:bg-stone-800 dark:bg-stone-50 dark:text-stone-900 dark:hover:bg-stone-200"
+                  className="flex h-9 flex-1 items-center justify-center gap-2 rounded-none btn-underline bg-stone-900 text-xs font-semibold text-white hover:bg-stone-800 dark:bg-stone-50 dark:text-ink dark:hover:bg-stone-200"
                 >
                   <StopIcon className="h-4 w-4" />
                   Stop
@@ -564,7 +564,7 @@ export default function NewEntryPage() {
                 <button
                   type="button"
                   onClick={handleRestart}
-                  className="flex h-10 items-center justify-center gap-2 rounded-none px-3 text-xs font-semibold text-stone-500 hover:bg-stone-100 dark:text-stone-400 dark:hover:bg-stone-800"
+                  className="flex h-[34px] items-center justify-center gap-2 rounded-none btn-underline px-2.5 text-xs font-semibold text-stone-500 hover:bg-stone-100 dark:text-stone-400 dark:hover:bg-stone-800"
                 >
                   <RotateCcwIcon className="h-3.5 w-3.5" />
                   Re-record
@@ -572,7 +572,7 @@ export default function NewEntryPage() {
                 <button
                   type="button"
                   onClick={goToAnalysis}
-                  className="flex h-10 items-center justify-center gap-1.5 rounded-none bg-brand-yellow px-4 text-xs font-semibold text-stone-900 hover:bg-brand-yellow-dark"
+                  className="flex h-[34px] items-center justify-center gap-1.5 rounded-none btn-underline bg-brand-yellow px-3.5 text-xs font-semibold text-on-accent hover:bg-brand-yellow-dark"
                 >
                   Continue to analysis
                   <ArrowDownIcon className="h-3.5 w-3.5" />
@@ -614,7 +614,7 @@ export default function NewEntryPage() {
               ? "Your transcript appears here. You can also type or paste..."
               : "Paste or write your story, résumé bullet, or essay draft here..."
           }
-          className="w-full resize-none rounded-xl border border-stone-300 bg-transparent p-4 text-sm text-stone-900 placeholder:text-stone-400 focus:border-brand-orange focus:outline-none dark:border-stone-700 dark:text-stone-100"
+          className="w-full resize-none rounded-xl border border-stone-300 bg-transparent p-4 text-sm text-ink placeholder:text-stone-400 focus:border-brand-orange focus:outline-none dark:border-stone-700 dark:text-stone-100"
         />
 
         {error && <p className="mt-2 text-xs text-red-500">{error}</p>}
@@ -623,7 +623,7 @@ export default function NewEntryPage() {
           id="tour-submit-btn"
           onClick={handleSubmit}
           disabled={!text.trim() || submitting}
-          className="mt-3 flex h-11 w-full items-center justify-center rounded-none bg-brand-yellow text-sm font-semibold text-stone-900 hover:bg-brand-yellow-dark disabled:cursor-not-allowed disabled:opacity-40"
+          className="mt-3 flex h-9 w-full items-center justify-center rounded-none btn-underline bg-brand-yellow text-xs font-semibold text-on-accent hover:bg-brand-yellow-dark disabled:cursor-not-allowed disabled:opacity-40"
         >
           {submitting ? "Scoring…" : "Submit for feedback"}
         </button>

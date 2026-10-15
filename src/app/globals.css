@@ -6,7 +6,11 @@
 
 :root {
   --background: #f5f5f4; /* stone-100 */
-  --foreground: #1c1917; /* stone-900 */
+  --foreground: #4a4744; /* dark-grey text instead of near-black */
+  --ink: #4a4744;
+  --on-accent: #3a3835; /* text on the grey accent buttons */
+  --icon: #6c6c6c; /* a touch darker than mid grey; matches the logo grey */
+  --btn-line: #8a8680; /* the underline under rectangular buttons */
 
   /* Brand palette, sampled from the Sucsynct logo (golden yellow + grey on
      near-black) plus burnt orange as the third accent the logo doesn't
@@ -14,8 +18,8 @@
      text for contrast); burnt orange is for links, active states, and
      numeric/chart accents, which read poorly in yellow. Swap these four
      hex values if the real brand kit calls for something closer. */
-  --brand-yellow: #f2c230;
-  --brand-yellow-dark: #d9a91c;
+  --brand-yellow: #d0d0d0; /* grey equivalent of the logo yellow (#ffe000), buttons only for now */
+  --brand-yellow-dark: #b8b8b8;
   --brand-orange: #cc5500;
   --brand-orange-dark: #a84400;
 }
@@ -23,11 +27,15 @@
 .dark {
   --background: #0c0a09; /* stone-950 */
   --foreground: #f5f5f4; /* stone-100 */
+  --ink: #f5f5f4;
+  --on-accent: #3a3835;
+  --icon: #9a9a9a;
+  --btn-line: #a8a29e;
 
   /* Brightened slightly in dark mode so both accents keep enough contrast
      against the near-black background. */
-  --brand-yellow: #f5cb45;
-  --brand-yellow-dark: #ffde7a;
+  --brand-yellow: #c4c4c4;
+  --brand-yellow-dark: #dcdcdc;
   --brand-orange: #e2731f;
   --brand-orange-dark: #ff9148;
 }
@@ -35,6 +43,8 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-ink: var(--ink);
+  --color-on-accent: var(--on-accent);
   --color-brand-yellow: var(--brand-yellow);
   --color-brand-yellow-dark: var(--brand-yellow-dark);
   --color-brand-orange: var(--brand-orange);
@@ -49,4 +59,35 @@ body {
   /* Inter at its default (400) reads thin at this size — 500 gives the
      whole app a slightly heavier weight without touching every className. */
   font-weight: 500;
+}
+
+/* Icons: one slightly-darker-than-mid grey everywhere. Lives in the base
+   layer so any explicit text-* utility on an icon still wins. */
+@layer base {
+  .icon-grey {
+    color: var(--icon);
+  }
+}
+
+/* Rectangular buttons read as an underlined button: no box outline, just a
+   2px line underneath. */
+.btn-underline {
+  border-bottom: 2px solid var(--btn-line);
+}
+.btn-underline:disabled {
+  border-bottom-color: transparent;
+}
+
+/* Smooth light <-> dark switch. The class is added for a moment by the
+   theme toggle, so normal interactions don't pick up global transitions. */
+html.theme-fade,
+html.theme-fade *,
+html.theme-fade *::before,
+html.theme-fade *::after {
+  transition:
+    background-color 0.4s ease,
+    color 0.4s ease,
+    border-color 0.4s ease,
+    fill 0.4s ease,
+    stroke 0.4s ease !important;
 }

@@ -1,5 +1,6 @@
 "use client";
 
+import { AudioTooLongError, splitAudioForTranscription } from "@/lib/audio-chunks";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { AnalyzerSelector } from "@/components/analyzer-selector";
@@ -42,8 +43,15 @@ const MODES: { value: Mode; label: string; available: boolean }[] = [
 ];
 
 const WAVE_BARS = 6;
-// Vercel caps request bodies at 4.5 MB; the transcribe route enforces 4 MB.
+// Vercel caps request bodies at 4.5 MB; the transcribe route enforces 4 MB per
+// request. Anything bigger is split into parts in the browser (see
+// lib/audio-chunks), so these are the real limits a person can hit.
 const MAX_AUDIO_BYTES = 4 * 1024 * 1024;
+const MAX_RECORD_SECONDS = 15 * 60;
+const MAX_UPLOAD_SECONDS = 20 * 60;
+const MAX_UPLOAD_BYTES = 60 * 1024 * 1024;
+// Speech doesn't need studio bitrates; 32 kbps keeps ~15 min under one request.
+const RECORD_BITRATE = 32000;
 
 function extensionFor(mime: string) {
   if (mime.includes("mp4") || mime.includes("m4a") || mime.includes("aac")) return "m4a";
@@ -124,26 +132,74 @@ export default function NewEntryPage() {
     };
   }, [audioUrl]);
 
+  // Hard stop at the limit so a long story ends cleanly instead of failing.
+  useEffect(() => {
+    if (recordingState === "recording" && seconds >= MAX_RECORD_SECONDS) void handleStop();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [seconds, recordingState]);
+
   function clearAudio() {
     setAudioUrl(null);
     setTranscribeNote(null);
     chunksRef.current = [];
   }
 
+  async function transcribePart(
+    part: Blob,
+    name: string
+  ): Promise<{ text?: string; error?: string }> {
+    const form = new FormData();
+    form.append("file", part, name);
+    const res = await fetch("/api/transcribe", { method: "POST", body: form });
+    const data = (await res.json().catch(() => ({}))) as { text?: string; error?: string };
+    if (!res.ok || !data.text) {
+      return { error: data.error ?? "Transcription failed. You can type or paste the text instead." };
+    }
+    return { text: data.text };
+  }
+
   async function transcribeBlob(blob: Blob, name: string) {
     setTranscribing(true);
     setTranscribeNote(null);
     try {
-      const form = new FormData();
-      form.append("file", blob, name);
-      const res = await fetch("/api/transcribe", { method: "POST", body: form });
-      const data = (await res.json().catch(() => ({}))) as { text?: string; error?: string };
-      if (!res.ok || !data.text) {
-        setTranscribeNote(data.error ?? "Transcription failed. You can type or paste the text instead.");
-        return;
+      let parts: { blob: Blob; name: string }[] = [{ blob, name }];
+      if (blob.size > MAX_AUDIO_BYTES) {
+        setTranscribeNote("Long recording — getting it ready in parts…");
+        try {
+          const pieces = await splitAudioForTranscription(blob, MAX_UPLOAD_SECONDS);
+          parts = pieces.map((p, i) => ({ blob: p, name: `part-${i + 1}.wav` }));
+        } catch (err) {
+          setTranscribeNote(
+            err instanceof AudioTooLongError
+              ? `That audio runs about ${Math.round(err.seconds / 60)} minutes. The limit is ${MAX_UPLOAD_SECONDS / 60} minutes, so try a shorter take or trim it. Your audio wasn't stored.`
+              : "Couldn't read that audio file. Try m4a, mp3 or wav, or type it below."
+          );
+          return;
+        }
       }
+
+      const texts: string[] = [];
+      for (let i = 0; i < parts.length; i++) {
+        if (parts.length > 1) setTranscribeNote(`Transcribing part ${i + 1} of ${parts.length}…`);
+        const result = await transcribePart(parts[i].blob, parts[i].name);
+        if (!result.text) {
+          if (texts.length) {
+            // Keep what we have rather than losing a long story to one bad part.
+            setText((prev) => (prev.trim() ? `${prev.trim()}\n\n${texts.join(" ")}` : texts.join(" ")));
+            setTranscribeNote(
+              `Part ${i + 1} of ${parts.length} couldn't be transcribed, so the text below stops partway. You can type the rest.`
+            );
+            setTimeout(goToAnalysis, 150);
+          } else {
+            setTranscribeNote(result.error ?? "Transcription failed. You can type or paste the text instead.");
+          }
+          return;
+        }
+        texts.push(result.text);
+      }
+      const joined = texts.join(" ");
       // Append if there's already text so a second take doesn't wipe edits.
-      setText((prev) => (prev.trim() ? `${prev.trim()}\n\n${data.text}` : (data.text as string)));
+      setText((prev) => (prev.trim() ? `${prev.trim()}\n\n${joined}` : joined));
       setTranscribeNote("Transcribed. Fix anything it misheard before you submit.");
       setTimeout(goToAnalysis, 150);
     } catch {
@@ -162,8 +218,8 @@ export default function NewEntryPage() {
       setMicError("Choose an audio file (m4a, mp3, wav, webm…).");
       return;
     }
-    if (file.size > MAX_AUDIO_BYTES) {
-      setMicError("That file is over 4 MB. Try a shorter clip or a more compressed format.");
+    if (file.size > MAX_UPLOAD_BYTES) {
+      setMicError("That file is over 60 MB. Try a more compressed format (m4a or mp3) or a shorter take.");
       return;
     }
     setAudioName(file.name);
@@ -229,7 +285,12 @@ export default function NewEntryPage() {
       audioCtxRef.current = audioCtx;
       analyserRef.current = analyser;
 
-      const recorder = new MediaRecorder(stream);
+      let recorder: MediaRecorder;
+      try {
+        recorder = new MediaRecorder(stream, { audioBitsPerSecond: RECORD_BITRATE });
+      } catch {
+        recorder = new MediaRecorder(stream);
+      }
       chunksRef.current = [];
       recorder.addEventListener("dataavailable", (ev) => {
         if (ev.data.size > 0) chunksRef.current.push(ev.data);
@@ -307,11 +368,6 @@ export default function NewEntryPage() {
     const name = `recording.${extensionFor(blob.type)}`;
     setAudioName(name);
     setAudioUrl(URL.createObjectURL(blob));
-    if (blob.size > MAX_AUDIO_BYTES) {
-      setTranscribeNote("That recording is over 4 MB, which is too big to transcribe. Re-record a shorter take, or type it below.");
-      setTimeout(goToAnalysis, 150);
-      return;
-    }
     // Transcribe straight away; it fills the text box and moves you there.
     void transcribeBlob(blob, name);
   }
@@ -496,9 +552,9 @@ export default function NewEntryPage() {
                 }`}
               >
                 {recordingState === "stopped" ? (
-                  <CheckIcon className="h-6 w-6" />
+                  <CheckIcon className="h-6 w-6 !text-white" />
                 ) : (
-                  <MicIcon className="h-6 w-6" />
+                  <MicIcon className="h-6 w-6 !text-white" />
                 )}
               </div>
               <div className="flex h-7 items-end gap-1">
@@ -511,8 +567,13 @@ export default function NewEntryPage() {
                 ))}
               </div>
               <div className="text-xs text-stone-500 dark:text-stone-400">
-                {recordingState === "idle" && "Tap Record to start — your browser will ask for mic access"}
-                {recordingState === "recording" && `${formatTimer(seconds)} · recording`}
+                {recordingState === "idle" && `Up to ${MAX_RECORD_SECONDS / 60} minutes · your browser will ask for mic access`}
+                {recordingState === "recording" && (
+                  <span className={seconds >= MAX_RECORD_SECONDS - 60 ? "font-semibold text-amber-600 dark:text-amber-400" : undefined}>
+                    {formatTimer(seconds)} of {formatTimer(MAX_RECORD_SECONDS)}
+                    {seconds >= MAX_RECORD_SECONDS - 60 ? " · wrapping up soon" : " · recording"}
+                  </span>
+                )}
                 {recordingState === "paused" && `${formatTimer(seconds)} · paused`}
                 {recordingState === "stopped" && `${formatTimer(seconds)} recorded`}
               </div>
@@ -526,8 +587,8 @@ export default function NewEntryPage() {
                 onClick={handleRecord}
                 className="flex h-10 items-center justify-center gap-2 rounded-md bg-red-600 text-xs font-semibold text-white hover:bg-red-700"
               >
-                <MicIcon className="h-4 w-4" />
-                Record
+                <MicIcon className="h-4 w-4 !text-white" />
+                Tap to record
               </button>
             )}
 
@@ -592,7 +653,7 @@ export default function NewEntryPage() {
               <MicIcon className="h-6 w-6 text-stone-400" />
               <span className="font-semibold">Choose an audio file</span>
               <span className="text-xs text-stone-400 dark:text-stone-500">
-                m4a, mp3, wav or webm, up to 4 MB. It&rsquo;s transcribed, then discarded.
+                m4a, mp3, wav or webm, up to {MAX_UPLOAD_SECONDS / 60} minutes. It&rsquo;s transcribed, then discarded.
               </span>
               <input
                 type="file"

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { AnimatedNumber } from "@/components/animated-number";
+import { ModeLabel } from "@/components/mode-label";
 import { NavBar } from "@/components/nav-bar";
 import { TourOverlay, type TourStep } from "@/components/tour";
 import { storySnippet, timeAgo } from "@/lib/format";
@@ -103,14 +104,14 @@ export default function HistoryPage() {
                               {storySnippet(entry)}
                             </p>
                             <p className="mt-1 truncate text-xs text-stone-500 dark:text-stone-400">
-                              {entry.mode} &middot; {entry.goal || "no goal set"}
+                              {entry.goal || "no goal set"}
                             </p>
                           </div>
                           {delta !== null && (
                             <span
                               className={`text-xs font-semibold ${
                                 delta > 0
-                                  ? "text-brand-orange"
+                                  ? "text-brand-blue"
                                   : delta < 0
                                     ? "text-red-500"
                                     : "text-stone-400"
@@ -122,11 +123,13 @@ export default function HistoryPage() {
                           )}
                           <AnimatedNumber
                             value={entry.scores.overall}
-                            className="text-lg font-bold text-brand-orange"
+                            className="text-lg font-bold text-brand-blue"
                           />
                         </Link>
-                        <p className="mt-1.5 px-1 text-xs text-stone-400 dark:text-stone-500">
-                          {timeAgo(entry.createdAt)}
+                        <p className="mt-1.5 flex flex-wrap items-center gap-x-2 px-1 text-xs text-stone-400 dark:text-stone-500">
+                          <ModeLabel mode={entry.mode} />
+                          <span aria-hidden>&middot;</span>
+                          <span>{timeAgo(entry.createdAt)}</span>
                         </p>
                       </li>
                     );

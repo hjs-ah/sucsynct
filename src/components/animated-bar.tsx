@@ -4,8 +4,8 @@ import { useEffect, useState } from "react";
 import { useCountUp } from "@/lib/use-count-up";
 
 function defaultColor(score: number) {
-  if (score >= 70) return "bg-brand-orange";
-  if (score >= 45) return "bg-amber-500";
+  if (score >= 70) return "bg-brand-blue";
+  if (score >= 45) return "bg-brand-grey";
   return "bg-red-500";
 }
 

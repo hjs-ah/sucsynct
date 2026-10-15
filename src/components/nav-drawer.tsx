@@ -130,7 +130,7 @@ export function NavDrawer() {
                   href={link.href}
                   className={`flex items-center gap-3 rounded-none px-3 py-2.5 text-sm font-semibold transition-colors ${
                     active
-                      ? "bg-brand-orange/10 text-brand-orange"
+                      ? "bg-brand-blue/10 text-brand-blue"
                       : "text-stone-600 hover:bg-stone-100 dark:text-stone-300 dark:hover:bg-stone-800"
                   }`}
                 >

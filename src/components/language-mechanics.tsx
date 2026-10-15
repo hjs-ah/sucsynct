@@ -15,7 +15,7 @@ export function LanguageMechanics({ scores }: { scores: ScoreResult }) {
         label="Active voice"
         value={scores.activeVoicePercent}
         suffix="%"
-        colorFor={() => "bg-brand-orange"}
+        colorFor={() => "bg-brand-blue"}
       />
 
       <div className="flex flex-wrap items-center gap-2">
@@ -40,7 +40,7 @@ export function LanguageMechanics({ scores }: { scores: ScoreResult }) {
           scores.jargon.map((term) => (
             <span
               key={term}
-              className="rounded-full bg-amber-100 px-2.5 py-0.5 text-xs text-amber-700 dark:bg-amber-950 dark:text-amber-400"
+              className="rounded-full bg-brand-blue/10 px-2.5 py-0.5 text-xs text-brand-blue-dark"
             >
               &ldquo;{term}&rdquo;
             </span>

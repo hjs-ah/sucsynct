@@ -149,7 +149,7 @@ export function TourOverlay({ tourId, steps }: { tourId: string; steps: TourStep
               <div
                 key={i}
                 className={`h-1.5 w-1.5 rounded-full ${
-                  i === index ? "bg-brand-orange" : "bg-stone-200 dark:bg-stone-700"
+                  i === index ? "bg-brand-blue" : "bg-stone-200 dark:bg-stone-700"
                 }`}
               />
             ))}

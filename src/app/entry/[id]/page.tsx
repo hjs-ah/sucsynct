@@ -7,6 +7,7 @@ import { NavBar } from "@/components/nav-bar";
 import { AnimatedNumber } from "@/components/animated-number";
 import { ScoreBars } from "@/components/score-bars";
 import { LanguageMechanics } from "@/components/language-mechanics";
+import { ModeLabel } from "@/components/mode-label";
 import { StrengthOpportunity } from "@/components/strength-opportunity";
 import { suggestExercises } from "@/lib/practice";
 import { buildAnalysis } from "@/lib/rubric";
@@ -46,7 +47,7 @@ export default function EntryPage() {
           <p className="text-sm text-stone-500 dark:text-stone-400">
             We couldn&rsquo;t find that entry.
           </p>
-          <Link href="/" className="mt-3 inline-block text-sm font-semibold text-brand-orange">
+          <Link href="/" className="mt-3 inline-block text-sm font-semibold text-brand-blue">
             Back home
           </Link>
         </main>
@@ -72,24 +73,28 @@ export default function EntryPage() {
       <main className="mx-auto max-w-2xl px-6 py-8">
         <div className="mb-6 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
           <h1 className="text-xl font-bold text-ink dark:text-stone-50">Feedback</h1>
-          <span className="text-xs text-stone-500 dark:text-stone-400">
-            {entry.mode} &middot; {entry.goal || "no goal set"}
+          <span className="flex items-center gap-2 text-xs text-stone-500 dark:text-stone-400">
+            <ModeLabel mode={entry.mode} />
+            <span aria-hidden>&middot;</span>
+            {entry.goal || "no goal set"}
           </span>
         </div>
 
         <section className="flex flex-col items-center gap-2 text-center">
-          <AnimatedNumber
-            value={scores.overall}
-            className="text-6xl font-extrabold text-brand-orange"
-          />
+          <div className="flex h-36 w-36 items-center justify-center rounded-full border-[3px] border-brand-blue">
+            <AnimatedNumber
+              value={scores.overall}
+              className="text-5xl font-extrabold text-brand-blue"
+            />
+          </div>
           {isBenchmark ? (
-            <p className="text-xs font-semibold text-brand-orange">Your benchmark story</p>
+            <p className="text-xs font-semibold text-brand-blue">Your benchmark story</p>
           ) : benchmark && delta !== null ? (
             <p className="text-xs text-stone-500 dark:text-stone-400">
               Benchmark {benchmark.scores.overall}
               <span
                 className={`ml-2 font-semibold ${
-                  delta > 0 ? "text-green-600" : delta < 0 ? "text-red-500" : "text-stone-400"
+                  delta > 0 ? "text-brand-blue" : delta < 0 ? "text-red-500" : "text-stone-400"
                 }`}
               >
                 {delta > 0 ? "+" : ""}
@@ -116,7 +121,7 @@ export default function EntryPage() {
                 <span className="text-xs text-stone-500 dark:text-stone-400">We scored</span>
                 <AnimatedNumber
                   value={scores.overall}
-                  className="text-lg font-bold text-brand-orange"
+                  className="text-lg font-bold text-brand-blue"
                 />
               </div>
             </div>
@@ -174,7 +179,7 @@ export default function EntryPage() {
           <ol className="flex flex-col gap-4">
             {exercises.map((ex, i) => (
               <li key={ex.title} className="flex gap-3">
-                <span className="mt-0.5 w-4 shrink-0 text-xs font-bold text-brand-orange">
+                <span className="mt-0.5 w-4 shrink-0 text-xs font-bold text-brand-blue">
                   {i + 1}
                 </span>
                 <div>
@@ -211,7 +216,7 @@ export default function EntryPage() {
           <button
             disabled
             title="Coming soon — connect with a live coach"
-            className="cursor-not-allowed rounded-none border border-dashed border-amber-400 px-4 py-2 text-xs font-semibold text-amber-600 opacity-60 dark:border-amber-700 dark:text-amber-500"
+            className="cursor-not-allowed rounded-none border border-dashed border-stone-400 px-4 py-2 text-xs font-semibold text-stone-500 opacity-60 dark:border-stone-600 dark:text-stone-400"
           >
             Share with a coach
           </button>

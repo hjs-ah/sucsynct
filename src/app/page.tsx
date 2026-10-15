@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AnimatedNumber } from "@/components/animated-number";
 import { FlameIcon } from "@/components/icons";
+import { ModeLabel } from "@/components/mode-label";
 import { NavBar } from "@/components/nav-bar";
 import { SignOutButton } from "@/components/sign-out-button";
 import { TourOverlay, type TourStep } from "@/components/tour";
@@ -114,8 +115,8 @@ export default function HomePage() {
     <div className="min-h-screen">
       <NavBar />
       <main className="mx-auto max-w-3xl px-6 py-10">
-        <div className="mb-6 flex items-end justify-between gap-3">
-          <div className="min-w-0">
+        <div className="mb-6 flex flex-wrap items-end justify-between gap-x-3 gap-y-3">
+          <div className="whitespace-nowrap">
             <h1 className="text-xl font-bold text-ink dark:text-stone-50">Your stories</h1>
             <p className="text-sm text-stone-500 dark:text-stone-400">
               {entries.length === 0
@@ -139,15 +140,66 @@ export default function HomePage() {
           </div>
         </div>
 
-        {streak > 0 && (
-          <div className="mb-2 flex items-center gap-2 rounded-xl border border-brand-orange/30 bg-brand-orange/5 px-4 py-2.5">
-            <FlameIcon className="h-5 w-5 shrink-0 text-brand-orange" />
-            <p className="text-sm font-semibold text-stone-800 dark:text-stone-200">
-              {streak}-day streak
-              <span className="ml-1.5 font-normal text-stone-500 dark:text-stone-400">
-                — {streak === 1 ? "keep it going tomorrow" : "don't break the chain"}
-              </span>
-            </p>
+        {entries.length > 0 && (
+          <div className="grid grid-cols-2 gap-3">
+            <div className="flex min-w-0 flex-col justify-center gap-1 rounded-xl border border-brand-blue/30 bg-brand-blue/5 p-3.5">
+              <div className="flex items-center gap-2">
+                <FlameIcon className="h-5 w-5 shrink-0 text-brand-blue" />
+                <p className="text-sm font-bold text-ink dark:text-stone-100">
+                  {streak}-day streak
+                </p>
+              </div>
+              <p className="text-xs text-stone-500 dark:text-stone-400">
+                {streak === 0
+                  ? "Write or record today to start one."
+                  : streak === 1
+                    ? "Keep it going tomorrow."
+                    : "Don\u2019t break the chain."}
+              </p>
+            </div>
+
+            <div className="flex min-w-0 flex-col gap-2 rounded-xl border border-stone-200 p-3.5 dark:border-stone-800">
+              <h2 className="text-[10px] font-bold uppercase leading-tight tracking-wide text-stone-500 dark:text-stone-400">
+                This month&rsquo;s Tells
+              </h2>
+              {monthly ? (
+                <>
+                  <div className="flex items-center gap-2.5">
+                    <div
+                      className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full"
+                      style={{
+                        background: `conic-gradient(var(--brand-blue) ${monthly.average * 3.6}deg, var(--track) 0deg)`,
+                      }}
+                    >
+                      <div className="flex h-9 w-9 items-center justify-center rounded-full bg-stone-50 text-xs font-extrabold text-ink dark:bg-stone-950 dark:text-stone-50">
+                        <AnimatedNumber value={monthly.average} />
+                      </div>
+                    </div>
+                    <div className="flex h-12 min-w-0 flex-1 items-end gap-1">
+                      {monthly.entries
+                        .slice(0, 8)
+                        .reverse()
+                        .map((e) => (
+                          <div
+                            key={e.id}
+                            className="max-w-2.5 flex-1 rounded-sm bg-brand-blue/40 dark:bg-brand-blue/70"
+                            style={{ height: `${Math.max(10, e.scores.overall)}%` }}
+                          />
+                        ))}
+                    </div>
+                  </div>
+                  {benchmark && (
+                    <p className="text-[11px] text-stone-400 dark:text-stone-500">
+                      vs. benchmark: {benchmark.scores.overall}
+                    </p>
+                  )}
+                </>
+              ) : (
+                <p className="text-xs text-stone-500 dark:text-stone-400">
+                  Nothing yet this month.
+                </p>
+              )}
+            </div>
           </div>
         )}
 
@@ -205,59 +257,23 @@ export default function HomePage() {
                         {storySnippet(entry)}
                       </p>
                       <p className="mt-1 truncate text-xs text-stone-500 dark:text-stone-400">
-                        {entry.mode} &middot; {entry.goal || "no goal set"}
+                        {entry.goal || "no goal set"}
                       </p>
                     </div>
                     <AnimatedNumber
                       value={entry.scores.overall}
-                      className="text-lg font-bold text-brand-orange"
+                      className="text-lg font-bold text-brand-blue"
                     />
                   </Link>
-                  <p className="mt-1.5 px-1 text-xs text-stone-400 dark:text-stone-500">
-                    {timeAgo(entry.createdAt)}
+                  <p className="mt-1.5 flex flex-wrap items-center gap-x-2 px-1 text-xs text-stone-400 dark:text-stone-500">
+                    <ModeLabel mode={entry.mode} />
+                    <span aria-hidden>&middot;</span>
+                    <span>{timeAgo(entry.createdAt)}</span>
                   </p>
                 </li>
               ))}
             </ul>
 
-            {monthly && (
-              <div className="mt-8 flex flex-col gap-3 border-t border-stone-200 pt-6 dark:border-stone-800">
-                <div className="flex items-center justify-between">
-                  <h2 className="text-xs font-bold uppercase tracking-wide text-stone-500 dark:text-stone-400">
-                    This month&rsquo;s Tells
-                  </h2>
-                  {benchmark && (
-                    <span className="text-xs text-stone-400 dark:text-stone-500">
-                      vs. benchmark: {benchmark.scores.overall}
-                    </span>
-                  )}
-                </div>
-                <div className="flex items-center gap-4">
-                  <div
-                    className="relative flex h-14 w-14 shrink-0 items-center justify-center rounded-full"
-                    style={{
-                      background: `conic-gradient(var(--brand-orange) ${monthly.average * 3.6}deg, #e7e5e4 0deg)`,
-                    }}
-                  >
-                    <div className="flex h-11 w-11 items-center justify-center rounded-full bg-white text-sm font-extrabold text-ink dark:bg-stone-950 dark:text-stone-50">
-                      <AnimatedNumber value={monthly.average} />
-                    </div>
-                  </div>
-                  <div className="flex h-14 flex-1 items-end gap-1.5">
-                    {monthly.entries
-                      .slice(0, 10)
-                      .reverse()
-                      .map((e) => (
-                        <div
-                          key={e.id}
-                          className="w-3 rounded-sm bg-brand-orange/40 dark:bg-brand-orange/70"
-                          style={{ height: `${Math.max(10, e.scores.overall)}%` }}
-                        />
-                      ))}
-                  </div>
-                </div>
-              </div>
-            )}
           </>
         )}
 

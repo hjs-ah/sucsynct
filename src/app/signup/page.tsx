@@ -112,7 +112,7 @@ export default function SignupPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="Email"
-                  className="w-full rounded-lg border border-stone-300 bg-transparent px-3 py-2.5 text-sm text-ink placeholder:text-stone-400 focus:border-brand-orange focus:outline-none dark:border-stone-700 dark:text-stone-100"
+                  className="w-full rounded-lg border border-stone-300 bg-transparent px-3 py-2.5 text-sm text-ink placeholder:text-stone-400 focus:border-brand-blue focus:outline-none dark:border-stone-700 dark:text-stone-100"
                 />
                 <input
                   type="password"
@@ -121,7 +121,7 @@ export default function SignupPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Password (6+ characters)"
-                  className="w-full rounded-lg border border-stone-300 bg-transparent px-3 py-2.5 text-sm text-ink placeholder:text-stone-400 focus:border-brand-orange focus:outline-none dark:border-stone-700 dark:text-stone-100"
+                  className="w-full rounded-lg border border-stone-300 bg-transparent px-3 py-2.5 text-sm text-ink placeholder:text-stone-400 focus:border-brand-blue focus:outline-none dark:border-stone-700 dark:text-stone-100"
                 />
                 {error && <p className="text-xs text-red-500">{error}</p>}
                 <button
@@ -139,7 +139,7 @@ export default function SignupPage() {
         {!checkEmail && (
           <p className="mt-5 text-center text-sm text-stone-500 dark:text-stone-400">
             Already have an account?{" "}
-            <Link href="/login" className="font-semibold text-brand-orange">
+            <Link href="/login" className="font-semibold text-brand-blue">
               Sign in
             </Link>
           </p>

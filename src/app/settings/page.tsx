@@ -170,7 +170,7 @@ export default function SettingsPage() {
                   }
                 }}
                 placeholder="Add a focus area…"
-                className="flex-1 rounded-full border border-dashed border-stone-300 bg-transparent px-3 py-1 text-xs text-ink placeholder:text-stone-400 focus:border-brand-orange focus:outline-none dark:border-stone-700 dark:text-stone-100"
+                className="flex-1 rounded-full border border-dashed border-stone-300 bg-transparent px-3 py-1 text-xs text-ink placeholder:text-stone-400 focus:border-brand-blue focus:outline-none dark:border-stone-700 dark:text-stone-100"
               />
               <button
                 type="button"
@@ -182,7 +182,7 @@ export default function SettingsPage() {
               </button>
             </div>
             {!prefs.email && (
-              <Link href="/signup" className="text-xs font-semibold text-brand-orange">
+              <Link href="/signup" className="text-xs font-semibold text-brand-blue">
                 Create an account to sync across devices
               </Link>
             )}
@@ -225,13 +225,13 @@ export default function SettingsPage() {
                 type="checkbox"
                 checked={prefs.autoDeleteAudio}
                 onChange={(e) => updateAutoDelete(e.target.checked)}
-                className="h-5 w-5 accent-brand-orange"
+                className="h-5 w-5 accent-brand-blue"
               />
             </label>
             <button
               disabled
               title="Coming soon"
-              className="mt-4 text-xs font-semibold text-brand-orange opacity-50"
+              className="mt-4 text-xs font-semibold text-brand-blue opacity-50"
             >
               Export my data
             </button>

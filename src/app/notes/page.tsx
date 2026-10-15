@@ -56,7 +56,7 @@ export default function NotesPage() {
           }}
           rows={10}
           placeholder="Dump a rough version here — a few sentences is plenty..."
-          className="w-full resize-none rounded-xl border border-stone-300 bg-transparent p-4 text-sm text-ink placeholder:text-stone-400 focus:border-brand-orange focus:outline-none dark:border-stone-700 dark:text-stone-100"
+          className="w-full resize-none rounded-xl border border-stone-300 bg-transparent p-4 text-sm text-ink placeholder:text-stone-400 focus:border-brand-blue focus:outline-none dark:border-stone-700 dark:text-stone-100"
         />
 
         <div className="mt-3 flex flex-wrap gap-2">
@@ -78,10 +78,10 @@ export default function NotesPage() {
 
         {read && (
           <div className="mt-5 grid grid-cols-1 gap-2 sm:grid-cols-2">
-            <div className="rounded-lg border border-green-200 bg-green-50 p-3 text-xs text-green-800 dark:border-green-900 dark:bg-green-950/40 dark:text-green-400">
+            <div className="rounded-lg border border-brand-blue/30 bg-brand-blue/10 text-brand-blue-dark dark:text-brand-blue-dark p-3 text-xs">
               <span className="font-bold">Working</span> — {read.strength}
             </div>
-            <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-xs text-amber-800 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-400">
+            <div className="rounded-lg border border-stone-300 bg-stone-100 text-stone-700 dark:border-stone-700 dark:bg-stone-800/60 dark:text-stone-300 p-3 text-xs">
               <span className="font-bold">Missing</span> — {read.opportunity}
             </div>
           </div>

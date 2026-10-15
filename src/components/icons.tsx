@@ -173,3 +173,22 @@ export function PlusCircleIcon(props: IconProps) {
     </svg>
   );
 }
+
+export function PenIcon(props: IconProps) {
+  return (
+    <svg {...base} {...props} className={`icon-grey ${props.className ?? ""}`}>
+      <path d="M4 20h4L19 9a2.8 2.8 0 0 0-4-4L4 16v4z" />
+      <path d="M13.5 6.5l4 4" />
+    </svg>
+  );
+}
+
+export function UploadIcon(props: IconProps) {
+  return (
+    <svg {...base} {...props} className={`icon-grey ${props.className ?? ""}`}>
+      <path d="M12 16V4" />
+      <path d="M7 9l5-5 5 5" />
+      <path d="M5 20h14" />
+    </svg>
+  );
+}

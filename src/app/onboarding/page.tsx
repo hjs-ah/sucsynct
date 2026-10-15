@@ -259,7 +259,7 @@ export default function OnboardingPage() {
                       onClick={() => toggleFocus(option)}
                       className={`rounded-full border px-3.5 py-1.5 text-xs font-semibold transition-colors ${
                         active
-                          ? "border-brand-orange bg-brand-orange/10 text-brand-orange"
+                          ? "border-brand-blue bg-brand-blue/10 text-brand-blue"
                           : "border-stone-300 text-stone-600 hover:border-stone-400 dark:border-stone-700 dark:text-stone-300"
                       }`}
                     >
@@ -271,7 +271,7 @@ export default function OnboardingPage() {
                   <button
                     key={option}
                     onClick={() => toggleFocus(option)}
-                    className="rounded-full border border-brand-orange bg-brand-orange/10 px-3.5 py-1.5 text-xs font-semibold text-brand-orange"
+                    className="rounded-full border border-brand-blue bg-brand-blue/10 px-3.5 py-1.5 text-xs font-semibold text-brand-blue"
                   >
                     {option} &times;
                   </button>
@@ -289,7 +289,7 @@ export default function OnboardingPage() {
                     }
                   }}
                   placeholder="Not listed? Add your own…"
-                  className="flex-1 rounded-full border border-dashed border-stone-300 bg-transparent px-3.5 py-1.5 text-xs text-ink placeholder:text-stone-400 focus:border-brand-orange focus:outline-none dark:border-stone-700 dark:text-stone-100"
+                  className="flex-1 rounded-full border border-dashed border-stone-300 bg-transparent px-3.5 py-1.5 text-xs text-ink placeholder:text-stone-400 focus:border-brand-blue focus:outline-none dark:border-stone-700 dark:text-stone-100"
                 />
                 <button
                   type="button"
@@ -324,7 +324,7 @@ export default function OnboardingPage() {
                 onChange={(e) => setWarmup(e.target.value)}
                 rows={6}
                 placeholder="Type your story here — recording comes to the full app..."
-                className="w-full resize-none rounded-xl border border-stone-300 bg-transparent p-3 text-sm text-ink placeholder:text-stone-400 focus:border-brand-orange focus:outline-none dark:border-stone-700 dark:text-stone-100"
+                className="w-full resize-none rounded-xl border border-stone-300 bg-transparent p-3 text-sm text-ink placeholder:text-stone-400 focus:border-brand-blue focus:outline-none dark:border-stone-700 dark:text-stone-100"
               />
               <p className="text-xs text-stone-400 dark:text-stone-500">
                 Type it here for now. In the full app you can also record your voice or upload
@@ -346,7 +346,7 @@ export default function OnboardingPage() {
                 Nice start.
               </h2>
               <div className="flex items-center gap-3 rounded-xl bg-stone-100 p-4 dark:bg-stone-800">
-                <div className="text-2xl font-extrabold text-brand-orange">
+                <div className="text-2xl font-extrabold text-brand-blue">
                   {firstScore.overall}
                 </div>
                 <p className="text-xs text-stone-600 dark:text-stone-300">

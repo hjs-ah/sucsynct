@@ -388,7 +388,7 @@ export default function NewEntryPage() {
             max={100}
             value={selfScore}
             onChange={(e) => setSelfScore(Number(e.target.value))}
-            className="w-full accent-brand-orange"
+            className="w-full accent-brand-blue"
           />
 
           <button
@@ -417,7 +417,7 @@ export default function NewEntryPage() {
             <a
               href={audioUrl}
               download={audioName}
-              className="shrink-0 font-semibold text-brand-orange hover:underline"
+              className="shrink-0 font-semibold text-brand-blue hover:underline"
             >
               Download a copy
             </a>
@@ -471,13 +471,13 @@ export default function NewEntryPage() {
             value={audience}
             onChange={(e) => setAudience(e.target.value)}
             placeholder="Audience (e.g. hiring manager)"
-            className="rounded-lg border border-stone-300 bg-transparent px-3 py-2 text-sm text-ink placeholder:text-stone-400 focus:border-brand-orange focus:outline-none dark:border-stone-700 dark:text-stone-100"
+            className="rounded-lg border border-stone-300 bg-transparent px-3 py-2 text-sm text-ink placeholder:text-stone-400 focus:border-brand-blue focus:outline-none dark:border-stone-700 dark:text-stone-100"
           />
           <input
             value={goal}
             onChange={(e) => setGoal(e.target.value)}
             placeholder="Goal (e.g. land the interview)"
-            className="rounded-lg border border-stone-300 bg-transparent px-3 py-2 text-sm text-ink placeholder:text-stone-400 focus:border-brand-orange focus:outline-none dark:border-stone-700 dark:text-stone-100"
+            className="rounded-lg border border-stone-300 bg-transparent px-3 py-2 text-sm text-ink placeholder:text-stone-400 focus:border-brand-blue focus:outline-none dark:border-stone-700 dark:text-stone-100"
           />
         </div>
 
@@ -614,7 +614,7 @@ export default function NewEntryPage() {
               ? "Your transcript appears here. You can also type or paste..."
               : "Paste or write your story, résumé bullet, or essay draft here..."
           }
-          className="w-full resize-none rounded-xl border border-stone-300 bg-transparent p-4 text-sm text-ink placeholder:text-stone-400 focus:border-brand-orange focus:outline-none dark:border-stone-700 dark:text-stone-100"
+          className="w-full resize-none rounded-xl border border-stone-300 bg-transparent p-4 text-sm text-ink placeholder:text-stone-400 focus:border-brand-blue focus:outline-none dark:border-stone-700 dark:text-stone-100"
         />
 
         {error && <p className="mt-2 text-xs text-red-500">{error}</p>}

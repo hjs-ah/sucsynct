@@ -172,14 +172,14 @@ export default function EntryPage() {
         </section>
 
         <section className={section}>
-          <h2 className={heading}>Practice speaking</h2>
+          <h2 className={heading}>Practice suggestions</h2>
           <p className="mb-4 text-xs text-stone-500 dark:text-stone-400">
             Short drills aimed at what scored lowest. Do them out loud, then try again.
           </p>
           <ol className="flex flex-col gap-4">
             {exercises.map((ex, i) => (
               <li key={ex.title} className="flex gap-3">
-                <span className="mt-0.5 w-4 shrink-0 text-xs font-bold text-brand-blue">
+                <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-brand-blue text-xs font-bold text-white dark:text-stone-950">
                   {i + 1}
                 </span>
                 <div>

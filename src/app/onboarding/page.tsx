@@ -181,16 +181,6 @@ export default function OnboardingPage() {
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-stone-50 dark:bg-stone-950">
-      <div className="absolute inset-x-0 bottom-8 z-20 flex justify-center">
-        <button
-          type="button"
-          onClick={skipOnboarding}
-          className="rounded-md border border-stone-300 px-3.5 py-1.5 text-xs font-semibold text-stone-600 dark:border-stone-700 dark:text-stone-300"
-        >
-          Skip onboarding
-        </button>
-      </div>
-
       {/* The logo starts centred, fades in, then slides up above the notes. */}
       <div
         className="absolute left-1/2 z-10"
@@ -271,11 +261,26 @@ export default function OnboardingPage() {
               </svg>
             </button>
           </div>
+          <div
+            className="mt-6 transition-opacity duration-700"
+            style={{
+              opacity: phase === "notes" ? 1 : 0,
+              pointerEvents: phase === "notes" ? "auto" : "none",
+            }}
+          >
+            <button
+            type="button"
+            onClick={skipOnboarding}
+            className="rounded-md border border-stone-300 px-3.5 py-1.5 text-xs font-semibold text-stone-600 dark:border-stone-700 dark:text-stone-300"
+        >
+            Skip onboarding
+        </button>
+          </div>
         </div>
       )}
 
       {phase === "steps" && (
-        <div className="animate-fade-in flex min-h-screen items-center justify-center px-6 pb-24 pt-36">
+        <div className="animate-fade-in flex min-h-screen items-center justify-center px-6 pb-10 pt-36">
           <div className="w-full max-w-md">
             <div className="mb-6 flex gap-1.5">
               {Array.from({ length: STEP_COUNT }).map((_, i) => (
@@ -414,6 +419,16 @@ export default function OnboardingPage() {
               </button>
             </div>
           )}
+            </div>
+
+            <div className="mt-5 flex justify-center">
+              <button
+              type="button"
+              onClick={skipOnboarding}
+              className="rounded-md border border-stone-300 px-3.5 py-1.5 text-xs font-semibold text-stone-600 dark:border-stone-700 dark:text-stone-300"
+        >
+              Skip onboarding
+        </button>
             </div>
           </div>
         </div>

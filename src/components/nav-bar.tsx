@@ -5,7 +5,7 @@ import { HomeIcon, PlusIcon } from "@/components/icons";
 
 export function NavBar() {
   return (
-    <header className="border-b border-stone-200 dark:border-stone-800">
+    <header className="sticky top-0 z-30 border-b border-stone-200 bg-background/90 backdrop-blur dark:border-stone-800">
       <div className="mx-auto grid max-w-3xl grid-cols-[1fr_auto_1fr] items-center gap-2 px-4 py-3 sm:px-6 sm:py-4">
         <div className="flex items-center gap-1">
           <Link

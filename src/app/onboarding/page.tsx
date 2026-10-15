@@ -109,7 +109,7 @@ export default function OnboardingPage() {
   const displayIndex = pendingIndex ?? noteIndex;
 
   function goToNote(target: number) {
-    if (phase !== "notes" || !notesStarted || target < 0) return;
+    if (phase !== "notes" || !notesStarted || target < 0 || target >= NOTES.length) return;
     setPendingIndex(target);
     setNoteVisible(false);
   }
@@ -262,7 +262,7 @@ export default function OnboardingPage() {
             <button
               type="button"
               onClick={() => goToNote(displayIndex + 1)}
-              disabled={!notesStarted}
+              disabled={displayIndex >= NOTES.length - 1 || !notesStarted}
               aria-label="Next message"
               className="flex h-9 w-9 items-center justify-center rounded-md text-stone-500 transition-colors hover:bg-stone-100 disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:bg-transparent dark:text-stone-400 dark:hover:bg-stone-800"
             >

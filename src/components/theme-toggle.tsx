@@ -16,7 +16,7 @@ export function ThemeToggle() {
   useEffect(() => setMounted(true), []);
 
   return (
-    <div className="inline-flex w-full rounded-none bg-stone-100 p-1 dark:bg-stone-800">
+    <div className="flex min-w-[13.5rem] max-w-[16rem] flex-1 overflow-hidden rounded-md border border-stone-300 dark:border-stone-700">
       {OPTIONS.map((opt) => {
         const active = mounted && theme === opt.value;
         return (
@@ -31,7 +31,7 @@ export function ThemeToggle() {
               setTheme(opt.value);
               window.setTimeout(() => root.classList.remove("theme-fade"), 500);
             }}
-            className={`flex-1 rounded-none px-3 py-1.5 text-sm font-medium transition-colors ${
+            className={`flex-1 px-3 py-1.5 text-sm font-medium transition-colors ${
               active
                 ? "bg-brand-yellow text-on-accent"
                 : "text-stone-500 hover:text-stone-700 dark:text-stone-400 dark:hover:text-stone-200"

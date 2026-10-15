@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { getEntries, makeId, saveEntry, savePreferences } from "@/lib/storage";
 import { mockScore } from "@/lib/rubric";
 import type { ScoreResult } from "@/lib/types";
@@ -54,7 +54,9 @@ export default function OnboardingPage() {
   const [logoIn, setLogoIn] = useState(false);
   const [noteIndex, setNoteIndex] = useState(0);
   const [noteVisible, setNoteVisible] = useState(false);
-  const notesStarted = useRef(false);
+  const [notesStarted, setNotesStarted] = useState(false);
+  // Set when someone taps an arrow: the note to fade in next.
+  const [pendingIndex, setPendingIndex] = useState<number | null>(null);
   const [focus, setFocus] = useState<string[]>([]);
   const [customFocusInput, setCustomFocusInput] = useState("");
   const [warmup, setWarmup] = useState("");
@@ -73,7 +75,9 @@ export default function OnboardingPage() {
   }, []);
 
   // Each note fades in, stays for 5 seconds, fades out, then the next one
-  // takes its place. After the last note the interactive steps begin.
+  // takes its place. After the last note the interactive steps begin. The
+  // arrows reuse the same fade by setting `pendingIndex`; any change restarts
+  // the 5-second timer.
   useEffect(() => {
     if (phase !== "notes") return;
     if (noteVisible) {
@@ -82,21 +86,33 @@ export default function OnboardingPage() {
     }
     const t = setTimeout(
       () => {
-        if (!notesStarted.current) {
-          notesStarted.current = true;
+        if (!notesStarted) {
+          setNotesStarted(true);
           setNoteVisible(true);
-        } else if (noteIndex >= NOTES.length - 1) {
+          return;
+        }
+        const target = pendingIndex ?? noteIndex + 1;
+        if (target >= NOTES.length) {
           setPhase("steps");
           setStep(1);
-        } else {
-          setNoteIndex((i) => i + 1);
-          setNoteVisible(true);
+          return;
         }
+        setNoteIndex(target);
+        setPendingIndex(null);
+        setNoteVisible(true);
       },
-      notesStarted.current ? NOTE_FADE_MS : 900
+      notesStarted ? NOTE_FADE_MS : 900
     );
     return () => clearTimeout(t);
-  }, [phase, noteVisible, noteIndex]);
+  }, [phase, noteVisible, noteIndex, notesStarted, pendingIndex]);
+
+  const displayIndex = pendingIndex ?? noteIndex;
+
+  function goToNote(target: number) {
+    if (phase !== "notes" || !notesStarted || target < 0) return;
+    setPendingIndex(target);
+    setNoteVisible(false);
+  }
 
   async function skipOnboarding() {
     await savePreferences({ onboarded: true });
@@ -165,13 +181,15 @@ export default function OnboardingPage() {
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-stone-50 dark:bg-stone-950">
-      <button
-        type="button"
-        onClick={skipOnboarding}
-        className="absolute right-4 top-4 z-20 rounded-none btn-underline px-2.5 py-1.5 text-xs font-semibold text-stone-600 dark:text-stone-300"
-      >
-        Skip onboarding
-      </button>
+      <div className="absolute inset-x-0 bottom-8 z-20 flex justify-center">
+        <button
+          type="button"
+          onClick={skipOnboarding}
+          className="rounded-md border border-stone-300 px-3.5 py-1.5 text-xs font-semibold text-stone-600 dark:border-stone-700 dark:text-stone-300"
+        >
+          Skip onboarding
+        </button>
+      </div>
 
       {/* The logo starts centred, fades in, then slides up above the notes. */}
       <div
@@ -205,33 +223,59 @@ export default function OnboardingPage() {
             }}
           >
             <h1 className="text-xl font-bold text-ink dark:text-stone-50">
-              {NOTES[noteIndex].title}
+              {NOTES[displayIndex].title}
             </h1>
             <p className="mt-3 text-sm leading-relaxed text-stone-500 dark:text-stone-400">
-              {NOTES[noteIndex].body}
+              {NOTES[displayIndex].body}
             </p>
           </div>
           <div
-            className="mt-8 flex gap-1.5 transition-opacity duration-700"
-            style={{ opacity: phase === "notes" ? 1 : 0 }}
-            aria-hidden
+            className="mt-8 flex items-center gap-4 transition-opacity duration-700"
+            style={{
+              opacity: phase === "notes" ? 1 : 0,
+              pointerEvents: phase === "notes" ? "auto" : "none",
+            }}
           >
-            {NOTES.map((_, i) => (
-              <div
-                key={i}
-                className={`h-1.5 w-1.5 rounded-full transition-colors duration-500 ${
-                  phase === "notes" && i === noteIndex
-                    ? "bg-stone-500 dark:bg-stone-300"
-                    : "bg-stone-300 dark:bg-stone-700"
-                }`}
-              />
-            ))}
+            <button
+              type="button"
+              onClick={() => goToNote(displayIndex - 1)}
+              disabled={displayIndex === 0 || !notesStarted}
+              aria-label="Previous message"
+              className="flex h-9 w-9 items-center justify-center rounded-md text-stone-500 transition-colors hover:bg-stone-100 disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:bg-transparent dark:text-stone-400 dark:hover:bg-stone-800"
+            >
+              <svg viewBox="0 0 16 16" className="h-3.5 w-3.5 fill-current" aria-hidden>
+                <polygon points="12,2 12,14 3,8" />
+              </svg>
+            </button>
+            <div className="flex gap-1.5" aria-hidden>
+              {NOTES.map((_, i) => (
+                <div
+                  key={i}
+                  className={`h-1.5 w-1.5 rounded-full transition-colors duration-500 ${
+                    phase === "notes" && i === displayIndex
+                      ? "bg-stone-500 dark:bg-stone-300"
+                      : "bg-stone-300 dark:bg-stone-700"
+                  }`}
+                />
+              ))}
+            </div>
+            <button
+              type="button"
+              onClick={() => goToNote(displayIndex + 1)}
+              disabled={!notesStarted}
+              aria-label="Next message"
+              className="flex h-9 w-9 items-center justify-center rounded-md text-stone-500 transition-colors hover:bg-stone-100 disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:bg-transparent dark:text-stone-400 dark:hover:bg-stone-800"
+            >
+              <svg viewBox="0 0 16 16" className="h-3.5 w-3.5 fill-current" aria-hidden>
+                <polygon points="4,2 4,14 13,8" />
+              </svg>
+            </button>
           </div>
         </div>
       )}
 
       {phase === "steps" && (
-        <div className="animate-fade-in flex min-h-screen items-center justify-center px-6 pb-10 pt-36">
+        <div className="animate-fade-in flex min-h-screen items-center justify-center px-6 pb-24 pt-36">
           <div className="w-full max-w-md">
             <div className="mb-6 flex gap-1.5">
               {Array.from({ length: STEP_COUNT }).map((_, i) => (
@@ -304,7 +348,7 @@ export default function OnboardingPage() {
               <button
                 onClick={() => setStep(2)}
                 disabled={focus.length === 0}
-                className="self-end rounded-none btn-underline bg-brand-yellow px-5 py-2 text-xs font-semibold text-on-accent hover:bg-brand-yellow-dark disabled:cursor-not-allowed disabled:opacity-40"
+                className="self-end rounded-md bg-brand-yellow px-5 py-2 text-xs font-semibold text-on-accent hover:bg-brand-yellow-dark disabled:cursor-not-allowed disabled:opacity-40"
               >
                 Continue
               </button>
@@ -333,7 +377,7 @@ export default function OnboardingPage() {
               <button
                 onClick={handleCapture}
                 disabled={!warmup.trim() || scoring}
-                className="self-end rounded-none btn-underline bg-brand-yellow px-5 py-2 text-xs font-semibold text-on-accent hover:bg-brand-yellow-dark disabled:cursor-not-allowed disabled:opacity-40"
+                className="self-end rounded-md bg-brand-yellow px-5 py-2 text-xs font-semibold text-on-accent hover:bg-brand-yellow-dark disabled:cursor-not-allowed disabled:opacity-40"
               >
                 {scoring ? "Scoring…" : "See my feedback"}
               </button>
@@ -364,7 +408,7 @@ export default function OnboardingPage() {
               </p>
               <button
                 onClick={finish}
-                className="self-end rounded-none btn-underline bg-brand-yellow px-5 py-2 text-xs font-semibold text-on-accent hover:bg-brand-yellow-dark"
+                className="self-end rounded-md bg-brand-yellow px-5 py-2 text-xs font-semibold text-on-accent hover:bg-brand-yellow-dark"
               >
                 Go to dashboard
               </button>

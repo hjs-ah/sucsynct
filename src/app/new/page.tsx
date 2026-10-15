@@ -393,7 +393,7 @@ export default function NewEntryPage() {
 
           <button
             onClick={handleReveal}
-            className="mt-6 w-full rounded-none btn-underline bg-brand-yellow px-3.5 py-2.5 text-xs font-semibold text-on-accent hover:bg-brand-yellow-dark"
+            className="mt-6 w-full rounded-md bg-brand-yellow px-3.5 py-2.5 text-xs font-semibold text-on-accent hover:bg-brand-yellow-dark"
           >
             See my score
           </button>
@@ -445,7 +445,8 @@ export default function NewEntryPage() {
           <AnalyzerSelector value={strictness} onChange={handleStrictnessChange} className="w-full" />
         </div>
 
-        <div id="tour-mode-toggle" className="mb-5 flex justify-center gap-2">
+        <div id="tour-mode-toggle" className="mb-5 flex justify-center">
+          <div className="inline-flex divide-x divide-stone-300 overflow-hidden rounded-md border border-stone-300 dark:divide-stone-700 dark:border-stone-700">
           {MODES.map((m) => (
             <button
               key={m.value}
@@ -453,7 +454,7 @@ export default function NewEntryPage() {
               disabled={!m.available}
               onClick={() => m.available && setMode(m.value)}
               title={m.available ? undefined : "Coming soon — text-first prototype"}
-              className={`rounded-none btn-underline px-3.5 py-1.5 text-xs font-semibold transition-colors ${
+              className={`px-3.5 py-1.5 text-xs font-semibold transition-colors ${
                 mode === m.value
                   ? "bg-brand-yellow text-on-accent"
                   : m.available
@@ -464,6 +465,7 @@ export default function NewEntryPage() {
               {m.label}
             </button>
           ))}
+          </div>
         </div>
 
         <div className="mb-5 grid grid-cols-2 gap-3">
@@ -522,7 +524,7 @@ export default function NewEntryPage() {
               <button
                 type="button"
                 onClick={handleRecord}
-                className="flex h-10 items-center justify-center gap-2 rounded-none btn-underline bg-red-600 text-xs font-semibold text-white hover:bg-red-700"
+                className="flex h-10 items-center justify-center gap-2 rounded-md bg-red-600 text-xs font-semibold text-white hover:bg-red-700"
               >
                 <MicIcon className="h-4 w-4" />
                 Record
@@ -530,11 +532,11 @@ export default function NewEntryPage() {
             )}
 
             {canUseRecordRow && (recordingState === "recording" || recordingState === "paused") && (
-              <div className="flex gap-2">
+              <div className="flex overflow-hidden rounded-md border border-stone-300 dark:border-stone-700">
                 <button
                   type="button"
                   onClick={recordingState === "recording" ? handlePause : handleResume}
-                  className="flex h-9 flex-1 items-center justify-center gap-2 rounded-none btn-underline text-xs font-semibold text-stone-700 hover:bg-stone-100 dark:text-stone-200 dark:hover:bg-stone-800"
+                  className="flex h-9 flex-1 items-center justify-center gap-2 text-xs font-semibold text-stone-700 hover:bg-stone-100 dark:text-stone-200 dark:hover:bg-stone-800"
                 >
                   {recordingState === "recording" ? (
                     <>
@@ -551,7 +553,7 @@ export default function NewEntryPage() {
                 <button
                   type="button"
                   onClick={handleStop}
-                  className="flex h-9 flex-1 items-center justify-center gap-2 rounded-none btn-underline bg-stone-900 text-xs font-semibold text-white hover:bg-stone-800 dark:bg-stone-50 dark:text-ink dark:hover:bg-stone-200"
+                  className="flex h-9 flex-1 items-center justify-center gap-2 bg-stone-900 text-xs font-semibold text-white hover:bg-stone-800 dark:bg-stone-50 dark:text-ink dark:hover:bg-stone-200"
                 >
                   <StopIcon className="h-4 w-4" />
                   Stop
@@ -564,7 +566,7 @@ export default function NewEntryPage() {
                 <button
                   type="button"
                   onClick={handleRestart}
-                  className="flex h-[34px] items-center justify-center gap-2 rounded-none btn-underline px-2.5 text-xs font-semibold text-stone-500 hover:bg-stone-100 dark:text-stone-400 dark:hover:bg-stone-800"
+                  className="flex h-[34px] items-center justify-center gap-2 rounded-md border border-stone-300 dark:border-stone-700 px-2.5 text-xs font-semibold text-stone-500 hover:bg-stone-100 dark:text-stone-400 dark:hover:bg-stone-800"
                 >
                   <RotateCcwIcon className="h-3.5 w-3.5" />
                   Re-record
@@ -572,7 +574,7 @@ export default function NewEntryPage() {
                 <button
                   type="button"
                   onClick={goToAnalysis}
-                  className="flex h-[34px] items-center justify-center gap-1.5 rounded-none btn-underline bg-brand-yellow px-3.5 text-xs font-semibold text-on-accent hover:bg-brand-yellow-dark"
+                  className="flex h-[34px] items-center justify-center gap-1.5 rounded-md bg-brand-yellow px-3.5 text-xs font-semibold text-on-accent hover:bg-brand-yellow-dark"
                 >
                   Continue to analysis
                   <ArrowDownIcon className="h-3.5 w-3.5" />
@@ -623,7 +625,7 @@ export default function NewEntryPage() {
           id="tour-submit-btn"
           onClick={handleSubmit}
           disabled={!text.trim() || submitting}
-          className="mt-3 flex h-9 w-full items-center justify-center rounded-none btn-underline bg-brand-yellow text-xs font-semibold text-on-accent hover:bg-brand-yellow-dark disabled:cursor-not-allowed disabled:opacity-40"
+          className="mt-3 flex h-9 w-full items-center justify-center rounded-md bg-brand-yellow text-xs font-semibold text-on-accent hover:bg-brand-yellow-dark disabled:cursor-not-allowed disabled:opacity-40"
         >
           {submitting ? "Scoring…" : "Submit for feedback"}
         </button>

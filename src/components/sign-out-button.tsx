@@ -28,7 +28,7 @@ export function SignOutButton() {
       <button
         type="button"
         onClick={handleSignOut}
-        className="flex items-center gap-2 rounded-none btn-underline px-3.5 py-1.5 text-xs font-semibold text-stone-600 dark:text-stone-300"
+        className="flex items-center gap-2 rounded-md border border-stone-300 dark:border-stone-700 px-3.5 py-1.5 text-xs font-semibold text-stone-600 dark:text-stone-300"
       >
         <LogOutIcon className="h-4 w-4 shrink-0" />
         Sign out
@@ -39,7 +39,7 @@ export function SignOutButton() {
     <div className="flex justify-center">
       <Link
         href="/login"
-        className="flex items-center gap-2 rounded-none btn-underline px-3.5 py-1.5 text-xs font-semibold text-stone-600 dark:text-stone-300"
+        className="flex items-center gap-2 rounded-md border border-stone-300 dark:border-stone-700 px-3.5 py-1.5 text-xs font-semibold text-stone-600 dark:text-stone-300"
       >
         <LogInIcon className="h-4 w-4 shrink-0" />
         Sign in

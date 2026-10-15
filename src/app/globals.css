@@ -10,7 +10,6 @@
   --ink: #4a4744;
   --on-accent: #3a3835; /* text on the grey accent buttons */
   --icon: #6c6c6c; /* a touch darker than mid grey; matches the logo grey */
-  --btn-line: #6c6c6c; /* the underline under rectangular buttons (logo grey) */
 
   /* Brand palette, sampled from the Sucsynct logo: teal blue and its grey.
      Blue is for links, active states and score/chart accents; grey carries
@@ -29,7 +28,6 @@
   --ink: #f5f5f4;
   --on-accent: #3a3835;
   --icon: #9a9a9a;
-  --btn-line: #9a9a9a;
 
   /* Lightened in dark mode so blue and grey keep contrast on near-black. */
   --brand-yellow: #c4c4c4;
@@ -68,15 +66,6 @@ body {
   .icon-grey {
     color: var(--icon);
   }
-}
-
-/* Rectangular buttons read as an underlined button: no box outline, just a
-   2px line underneath. */
-.btn-underline {
-  border-bottom: 2px solid var(--btn-line);
-}
-.btn-underline:disabled {
-  border-bottom-color: transparent;
 }
 
 /* Smooth light <-> dark switch. The class is added for a moment by the

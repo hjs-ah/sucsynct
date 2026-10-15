@@ -63,14 +63,14 @@ export default function NotesPage() {
           <button
             onClick={handleAssess}
             disabled={!text.trim()}
-            className="flex h-[34px] items-center justify-center rounded-none btn-underline bg-brand-yellow px-3.5 text-xs font-semibold text-on-accent hover:bg-brand-yellow-dark disabled:cursor-not-allowed disabled:opacity-40"
+            className="flex h-[34px] items-center justify-center rounded-md bg-brand-yellow px-3.5 text-xs font-semibold text-on-accent hover:bg-brand-yellow-dark disabled:cursor-not-allowed disabled:opacity-40"
           >
             Get a quick read
           </button>
           <button
             onClick={handlePromote}
             disabled={!text.trim()}
-            className="flex h-[34px] items-center justify-center rounded-none btn-underline px-3.5 text-xs font-semibold text-stone-700 disabled:cursor-not-allowed disabled:opacity-40 dark:text-stone-300"
+            className="flex h-[34px] items-center justify-center rounded-md border border-stone-300 dark:border-stone-700 px-3.5 text-xs font-semibold text-stone-700 disabled:cursor-not-allowed disabled:opacity-40 dark:text-stone-300"
           >
             Full analysis
           </button>

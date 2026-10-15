@@ -157,7 +157,7 @@ export function TourOverlay({ tourId, steps }: { tourId: string; steps: TourStep
           <button
             type="button"
             onClick={next}
-            className="rounded-none btn-underline bg-brand-yellow px-2.5 py-1.5 text-xs font-semibold text-on-accent hover:bg-brand-yellow-dark"
+            className="rounded-md bg-brand-yellow px-2.5 py-1.5 text-xs font-semibold text-on-accent hover:bg-brand-yellow-dark"
           >
             {index + 1 >= steps.length ? "Done" : "Next"}
           </button>

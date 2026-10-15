@@ -95,7 +95,7 @@ export default function SettingsPage() {
             Appearance
           </h2>
           <div className="rounded-2xl border border-stone-200 bg-white p-5 dark:border-stone-800 dark:bg-stone-900">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
                 <p className="text-sm font-medium text-ink dark:text-stone-100">Theme</p>
                 <p className="text-xs text-stone-500 dark:text-stone-400">
@@ -127,7 +127,7 @@ export default function SettingsPage() {
                   resetTours();
                   setToursReset(true);
                 }}
-                className="shrink-0 rounded-none btn-underline px-2.5 py-1.5 text-xs font-semibold text-stone-600 dark:text-stone-300"
+                className="shrink-0 rounded-md border border-stone-300 dark:border-stone-700 px-2.5 py-1.5 text-xs font-semibold text-stone-600 dark:text-stone-300"
               >
                 {toursReset ? "Reset" : "Replay tours"}
               </button>
@@ -248,7 +248,7 @@ export default function SettingsPage() {
             </p>
             <button
               onClick={handleClear}
-              className="rounded-none btn-underline border border-red-300 px-3.5 py-1.5 text-xs font-semibold text-red-600 hover:bg-red-100 dark:border-red-800 dark:hover:bg-red-950/40"
+              className="rounded-md border border-red-300 px-3.5 py-1.5 text-xs font-semibold text-red-600 hover:bg-red-100 dark:border-red-800 dark:hover:bg-red-950/40"
             >
               {confirmClear ? "Click again to confirm" : "Delete account & data"}
             </button>

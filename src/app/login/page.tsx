@@ -46,7 +46,7 @@ export default function LoginPage() {
               type="button"
               disabled
               title="Google sign-in is coming soon — needs a one-time setup in the Supabase dashboard"
-              className="flex h-[34px] cursor-not-allowed items-center justify-center gap-2 rounded-none btn-underline text-xs font-semibold text-stone-400 dark:text-stone-600"
+              className="flex h-[34px] cursor-not-allowed items-center justify-center gap-2 rounded-md border border-stone-300 dark:border-stone-700 text-xs font-semibold text-stone-400 dark:text-stone-600"
             >
               Continue with Google
               <span className="text-[10px] font-bold uppercase tracking-wide text-stone-400 dark:text-stone-600">
@@ -57,7 +57,7 @@ export default function LoginPage() {
               type="button"
               disabled
               title="Apple sign-in is coming soon — needs a one-time setup in the Supabase dashboard"
-              className="flex h-[34px] cursor-not-allowed items-center justify-center gap-2 rounded-none btn-underline text-xs font-semibold text-stone-400 dark:text-stone-600"
+              className="flex h-[34px] cursor-not-allowed items-center justify-center gap-2 rounded-md border border-stone-300 dark:border-stone-700 text-xs font-semibold text-stone-400 dark:text-stone-600"
             >
               Continue with Apple
               <span className="text-[10px] font-bold uppercase tracking-wide text-stone-400 dark:text-stone-600">
@@ -93,7 +93,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={submitting}
-              className="mt-1 flex h-9 w-full items-center justify-center rounded-none btn-underline bg-brand-yellow text-xs font-semibold text-on-accent hover:bg-brand-yellow-dark disabled:cursor-not-allowed disabled:opacity-60"
+              className="mt-1 flex h-9 w-full items-center justify-center rounded-md bg-brand-yellow text-xs font-semibold text-on-accent hover:bg-brand-yellow-dark disabled:cursor-not-allowed disabled:opacity-60"
             >
               {submitting ? "Signing in…" : "Sign in"}
             </button>

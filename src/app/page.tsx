@@ -127,13 +127,13 @@ export default function HomePage() {
           <div className="flex shrink-0 gap-1.5">
             <Link
               href="/notes"
-              className="rounded-none btn-underline px-3 py-1.5 text-xs font-semibold text-stone-600 dark:text-stone-300"
+              className="rounded-md border border-stone-300 dark:border-stone-700 px-3 py-1.5 text-xs font-semibold text-stone-600 dark:text-stone-300"
             >
               Quick notes
             </Link>
             <Link
               href="/new"
-              className="rounded-none btn-underline bg-brand-yellow px-3 py-1.5 text-xs font-semibold text-on-accent transition-colors hover:bg-brand-yellow-dark"
+              className="rounded-md bg-brand-yellow px-3 py-1.5 text-xs font-semibold text-on-accent transition-colors hover:bg-brand-yellow-dark"
             >
               + New entry
             </Link>
@@ -210,7 +210,7 @@ export default function HomePage() {
             </p>
             <Link
               href="/new"
-              className="mt-4 inline-block rounded-none btn-underline bg-brand-yellow px-3.5 py-1.5 text-xs font-semibold text-on-accent hover:bg-brand-yellow-dark"
+              className="mt-4 inline-block rounded-md bg-brand-yellow px-3.5 py-1.5 text-xs font-semibold text-on-accent hover:bg-brand-yellow-dark"
             >
               Start now
             </Link>
@@ -221,7 +221,7 @@ export default function HomePage() {
               <h2 className="text-xs font-bold uppercase tracking-wide text-stone-500 dark:text-stone-400">
                 Recent stories
               </h2>
-              <div className="flex overflow-hidden rounded-none border border-stone-300 dark:border-stone-700">
+              <div className="flex overflow-hidden rounded-md border border-stone-300 dark:border-stone-700">
                 <button
                   onClick={() => setSortBy("date")}
                   className={`px-3 py-1 text-xs font-semibold ${

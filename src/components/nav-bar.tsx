@@ -12,7 +12,7 @@ export function NavBar() {
             href="/"
             title="Home"
             aria-label="Home"
-            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-none text-stone-600 transition-colors hover:bg-stone-100 dark:text-stone-300 dark:hover:bg-stone-800"
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md text-stone-600 transition-colors hover:bg-stone-100 dark:text-stone-300 dark:hover:bg-stone-800"
           >
             <HomeIcon className="h-5 w-5" />
           </Link>
@@ -38,7 +38,7 @@ export function NavBar() {
           href="/new"
           title="New entry"
           aria-label="New entry"
-          className="flex h-[31px] shrink-0 items-center gap-1.5 justify-self-end rounded-none btn-underline bg-brand-yellow px-3 text-xs font-semibold text-on-accent transition-colors hover:bg-brand-yellow-dark"
+          className="flex h-[31px] shrink-0 items-center gap-1.5 justify-self-end rounded-md bg-brand-yellow px-3 text-xs font-semibold text-on-accent transition-colors hover:bg-brand-yellow-dark"
         >
           <PlusIcon className="h-4 w-4 shrink-0 text-on-accent" />
           <span className="hidden sm:inline">New entry</span>

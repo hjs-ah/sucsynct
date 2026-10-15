@@ -77,7 +77,7 @@ export default function HistoryPage() {
             </p>
             <Link
               href="/new"
-              className="mt-4 inline-block rounded-none btn-underline bg-brand-yellow px-3.5 py-1.5 text-xs font-semibold text-on-accent hover:bg-brand-yellow-dark"
+              className="mt-4 inline-block rounded-md bg-brand-yellow px-3.5 py-1.5 text-xs font-semibold text-on-accent hover:bg-brand-yellow-dark"
             >
               New entry
             </Link>

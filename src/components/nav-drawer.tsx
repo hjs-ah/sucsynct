@@ -79,7 +79,7 @@ export function NavDrawer() {
         onClick={() => setOpen(true)}
         title="Menu"
         aria-label="Open menu"
-        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-none text-stone-600 transition-colors hover:bg-stone-100 dark:text-stone-300 dark:hover:bg-stone-800"
+        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md text-stone-600 transition-colors hover:bg-stone-100 dark:text-stone-300 dark:hover:bg-stone-800"
       >
         <MenuIcon className="h-5 w-5" />
       </button>
@@ -107,7 +107,7 @@ export function NavDrawer() {
               type="button"
               onClick={() => setOpen(false)}
               aria-label="Close menu"
-              className="flex h-8 w-8 items-center justify-center rounded-none text-stone-400 hover:bg-stone-100 hover:text-stone-600 dark:hover:bg-stone-800 dark:hover:text-stone-200"
+              className="flex h-8 w-8 items-center justify-center rounded-md text-stone-400 hover:bg-stone-100 hover:text-stone-600 dark:hover:bg-stone-800 dark:hover:text-stone-200"
             >
               <XIcon className="h-5 w-5" />
             </button>
@@ -128,7 +128,7 @@ export function NavDrawer() {
                 <Link
                   key={link.href}
                   href={link.href}
-                  className={`flex items-center gap-3 rounded-none px-3 py-2.5 text-sm font-semibold transition-colors ${
+                  className={`flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-semibold transition-colors ${
                     active
                       ? "bg-brand-blue/10 text-brand-blue"
                       : "text-stone-600 hover:bg-stone-100 dark:text-stone-300 dark:hover:bg-stone-800"
@@ -148,7 +148,7 @@ export function NavDrawer() {
               <button
                 onClick={handleSignOut}
                 title={`Signed in as ${email}`}
-                className="flex w-full items-center gap-3 rounded-none px-3 py-2.5 text-left text-sm font-semibold text-stone-600 hover:bg-stone-100 dark:text-stone-300 dark:hover:bg-stone-800"
+                className="flex w-full items-center gap-3 rounded-md px-3 py-2.5 text-left text-sm font-semibold text-stone-600 hover:bg-stone-100 dark:text-stone-300 dark:hover:bg-stone-800"
               >
                 <LogOutIcon className="h-5 w-5 shrink-0" />
                 <span className="truncate">Sign out ({email})</span>
@@ -156,7 +156,7 @@ export function NavDrawer() {
             ) : (
               <Link
                 href="/login"
-                className="flex items-center gap-3 rounded-none px-3 py-2.5 text-sm font-semibold text-stone-600 hover:bg-stone-100 dark:text-stone-300 dark:hover:bg-stone-800"
+                className="flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-semibold text-stone-600 hover:bg-stone-100 dark:text-stone-300 dark:hover:bg-stone-800"
               >
                 <LogInIcon className="h-5 w-5 shrink-0" />
                 Sign in

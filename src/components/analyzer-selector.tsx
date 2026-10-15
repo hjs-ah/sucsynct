@@ -33,7 +33,7 @@ export function AnalyzerSelector({
       </span>
     </p>
     <div
-      className="relative grid grid-cols-3 overflow-hidden rounded-none border border-stone-300 dark:border-stone-700"
+      className="relative grid grid-cols-3 overflow-hidden rounded-md border border-stone-300 dark:border-stone-700"
     >
       <div
         className="absolute inset-y-0 left-0 w-1/3 bg-brand-yellow transition-transform duration-300 ease-out"

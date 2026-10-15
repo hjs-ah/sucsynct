@@ -203,20 +203,20 @@ export default function EntryPage() {
         <section className={`${section} flex flex-wrap items-center gap-3`}>
           <button
             onClick={() => router.push("/new")}
-            className="rounded-none btn-underline bg-brand-yellow px-4 py-2 text-xs font-semibold text-on-accent hover:bg-brand-yellow-dark"
+            className="rounded-md bg-brand-yellow px-4 py-2 text-xs font-semibold text-on-accent hover:bg-brand-yellow-dark"
           >
             Revise &amp; resubmit
           </button>
           <Link
             href="/history"
-            className="rounded-none btn-underline px-4 py-2 text-xs font-semibold text-stone-700 dark:text-stone-300"
+            className="rounded-md border border-stone-300 dark:border-stone-700 px-4 py-2 text-xs font-semibold text-stone-700 dark:text-stone-300"
           >
             View history
           </Link>
           <button
             disabled
             title="Coming soon — connect with a live coach"
-            className="cursor-not-allowed rounded-none border border-dashed border-stone-400 px-4 py-2 text-xs font-semibold text-stone-500 opacity-60 dark:border-stone-600 dark:text-stone-400"
+            className="cursor-not-allowed rounded-md border border-dashed border-stone-400 px-4 py-2 text-xs font-semibold text-stone-500 opacity-60 dark:border-stone-600 dark:text-stone-400"
           >
             Share with a coach
           </button>

@@ -52,7 +52,7 @@ export default function SignupPage() {
     <div className="flex min-h-screen items-center justify-center bg-stone-50 px-6 dark:bg-stone-950">
       <div className="w-full max-w-md">
         <div className="mb-6 flex flex-col items-center gap-2 text-center">
-          <Image src="/logo-mark-v2.png" alt="Sucsynct" width={71} height={65} className="h-10 w-auto" priority />
+          <Image src="/logo-mark-v3.png" alt="Sucsynct" width={236} height={200} className="h-10 w-auto dark:brightness-150" priority />
           <h1 className="text-lg font-bold text-ink dark:text-stone-50">
             Create your account
           </h1>

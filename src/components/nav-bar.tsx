@@ -24,12 +24,12 @@ export function NavBar() {
           className="justify-self-center"
         >
           <Image
-            src="/logo-v2.png"
+            src="/logo-v3.png"
             alt="Sucsynct"
-            width={253}
-            height={65}
+            width={760}
+            height={159}
             priority
-            className="h-7 w-auto"
+            className="h-8 w-auto dark:brightness-150"
           />
         </Link>
 

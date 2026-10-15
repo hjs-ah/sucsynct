@@ -185,12 +185,12 @@ export default function OnboardingPage() {
         }}
       >
         <Image
-          src="/logo-v2.png"
+          src="/logo-v3.png"
           alt="Sucsynct"
-          width={253}
-          height={65}
+          width={760}
+          height={159}
           priority
-          className="h-14 w-auto max-w-none"
+          className="h-12 w-auto max-w-none dark:brightness-150"
         />
       </div>
 

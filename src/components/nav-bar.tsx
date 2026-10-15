@@ -24,7 +24,7 @@ export function NavBar() {
           className="justify-self-center"
         >
           <Image
-            src="/logo.png"
+            src="/logo-v2.png"
             alt="Sucsynct"
             width={253}
             height={65}

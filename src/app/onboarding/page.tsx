@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { getEntries, makeId, saveEntry, savePreferences } from "@/lib/storage";
 import { mockScore } from "@/lib/rubric";
 import type { ScoreResult } from "@/lib/types";
@@ -20,16 +20,88 @@ const FOCUS_OPTIONS = [
   "Podcast / interview guesting",
 ];
 
-const STEP_COUNT = 4;
+// Interactive steps after the intro: 1 focus, 2 warm-up, 3 first feedback.
+const STEP_COUNT = 3;
+
+// The intro notes shown one at a time, centered, each for 5 seconds.
+const NOTES = [
+  {
+    title: "Tell better stories",
+    body: "Speak or write. We\u2019ll help the message land every time.",
+  },
+  {
+    title: "Write or record",
+    body: "A story, a pitch, or an answer. Whatever you\u2019re working on.",
+  },
+  {
+    title: "Get scored on six things",
+    body: "Clarity, structure, brevity, specificity, audience fit, and voice.",
+  },
+  {
+    title: "One strength, one fix",
+    body: "See what\u2019s working and one concrete thing to change, then try it again.",
+  },
+];
+
+const NOTE_VISIBLE_MS = 5000;
+const NOTE_FADE_MS = 550;
 
 export default function OnboardingPage() {
   const router = useRouter();
+  // 0 = intro (logo, then the timed notes); 1-3 = the interactive steps.
   const [step, setStep] = useState(0);
+  const [phase, setPhase] = useState<"logo" | "notes" | "steps">("logo");
+  const [logoIn, setLogoIn] = useState(false);
+  const [noteIndex, setNoteIndex] = useState(0);
+  const [noteVisible, setNoteVisible] = useState(false);
+  const notesStarted = useRef(false);
   const [focus, setFocus] = useState<string[]>([]);
   const [customFocusInput, setCustomFocusInput] = useState("");
   const [warmup, setWarmup] = useState("");
   const [scoring, setScoring] = useState(false);
   const [firstScore, setFirstScore] = useState<ScoreResult | null>(null);
+
+  // Logo fades in at the centre, holds a beat, then the notes begin and the
+  // logo slides up to the top.
+  useEffect(() => {
+    const raf = requestAnimationFrame(() => setLogoIn(true));
+    const t = setTimeout(() => setPhase("notes"), 2200);
+    return () => {
+      cancelAnimationFrame(raf);
+      clearTimeout(t);
+    };
+  }, []);
+
+  // Each note fades in, stays for 5 seconds, fades out, then the next one
+  // takes its place. After the last note the interactive steps begin.
+  useEffect(() => {
+    if (phase !== "notes") return;
+    if (noteVisible) {
+      const t = setTimeout(() => setNoteVisible(false), NOTE_VISIBLE_MS);
+      return () => clearTimeout(t);
+    }
+    const t = setTimeout(
+      () => {
+        if (!notesStarted.current) {
+          notesStarted.current = true;
+          setNoteVisible(true);
+        } else if (noteIndex >= NOTES.length - 1) {
+          setPhase("steps");
+          setStep(1);
+        } else {
+          setNoteIndex((i) => i + 1);
+          setNoteVisible(true);
+        }
+      },
+      notesStarted.current ? NOTE_FADE_MS : 900
+    );
+    return () => clearTimeout(t);
+  }, [phase, noteVisible, noteIndex]);
+
+  async function skipOnboarding() {
+    await savePreferences({ onboarded: true });
+    router.replace("/");
+  }
 
   function toggleFocus(option: string) {
     setFocus((prev) =>
@@ -89,54 +161,90 @@ export default function OnboardingPage() {
     router.replace("/");
   }
 
+  const atTop = phase !== "logo";
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-stone-50 px-6 dark:bg-stone-950">
-      <div className="w-full max-w-md">
-        <div className="mb-6 flex gap-1.5">
-          {Array.from({ length: STEP_COUNT }).map((_, i) => (
-            <div
-              key={i}
-              className={`h-1 flex-1 rounded-full ${
-                i <= step ? "bg-brand-yellow" : "bg-stone-200 dark:bg-stone-800"
-              }`}
-            />
-          ))}
+    <div className="relative min-h-screen overflow-hidden bg-stone-50 dark:bg-stone-950">
+      <button
+        type="button"
+        onClick={skipOnboarding}
+        className="absolute right-4 top-4 z-20 rounded-none btn-underline px-2.5 py-1.5 text-xs font-semibold text-stone-600 dark:text-stone-300"
+      >
+        Skip onboarding
+      </button>
+
+      {/* The logo starts centred, fades in, then slides up above the notes. */}
+      <div
+        className="absolute left-1/2 z-10"
+        style={{
+          top: atTop ? "4.25rem" : "50%",
+          transform: `translate(-50%, ${atTop ? "0" : "-50%"}) scale(${atTop ? 1 : 1.3})`,
+          opacity: logoIn ? 1 : 0,
+          transition:
+            "opacity 1000ms ease, top 900ms cubic-bezier(0.4, 0, 0.2, 1), transform 900ms cubic-bezier(0.4, 0, 0.2, 1)",
+        }}
+      >
+        <Image
+          src="/logo-v2.png"
+          alt="Sucsynct"
+          width={253}
+          height={65}
+          priority
+          className="h-14 w-auto max-w-none"
+        />
+      </div>
+
+      {phase !== "steps" && (
+        <div className="absolute inset-x-0 top-1/2 flex -translate-y-1/2 flex-col items-center px-8 text-center">
+          <div
+            className="max-w-sm"
+            style={{
+              opacity: phase === "notes" && noteVisible ? 1 : 0,
+              transform: phase === "notes" && noteVisible ? "translateY(0)" : "translateY(6px)",
+              transition: `opacity ${NOTE_FADE_MS}ms ease, transform ${NOTE_FADE_MS}ms ease`,
+            }}
+          >
+            <h1 className="text-xl font-bold text-ink dark:text-stone-50">
+              {NOTES[noteIndex].title}
+            </h1>
+            <p className="mt-3 text-sm leading-relaxed text-stone-500 dark:text-stone-400">
+              {NOTES[noteIndex].body}
+            </p>
+          </div>
+          <div
+            className="mt-8 flex gap-1.5 transition-opacity duration-700"
+            style={{ opacity: phase === "notes" ? 1 : 0 }}
+            aria-hidden
+          >
+            {NOTES.map((_, i) => (
+              <div
+                key={i}
+                className={`h-1.5 w-1.5 rounded-full transition-colors duration-500 ${
+                  phase === "notes" && i === noteIndex
+                    ? "bg-stone-500 dark:bg-stone-300"
+                    : "bg-stone-300 dark:bg-stone-700"
+                }`}
+              />
+            ))}
+          </div>
         </div>
+      )}
 
-        <div className="rounded-2xl border border-stone-200 bg-white p-8 dark:border-stone-800 dark:bg-stone-900">
-          {step === 0 && (
-            <div className="flex flex-col items-center gap-4 text-center">
-              <Image src="/logo-mark.png" alt="Sucsynct" width={71} height={65} className="h-11 w-auto" priority />
-              <h1 className="text-xl font-bold text-ink dark:text-stone-50">
-                Tell better stories
-              </h1>
-              <p className="text-sm text-stone-500 dark:text-stone-400">
-                Speak or write. We&rsquo;ll help the message land every time.
-              </p>
-              <ol className="w-full space-y-2 rounded-xl bg-stone-50 p-4 text-left text-xs text-stone-600 dark:bg-stone-950/50 dark:text-stone-300">
-                <li className="flex gap-2">
-                  <span className="font-bold text-brand-orange">1.</span>
-                  Write or record a story, pitch, or answer — whatever you&rsquo;re working on.
-                </li>
-                <li className="flex gap-2">
-                  <span className="font-bold text-brand-orange">2.</span>
-                  Get scored on six things: clarity, structure, brevity, specificity, audience
-                  fit, and voice.
-                </li>
-                <li className="flex gap-2">
-                  <span className="font-bold text-brand-orange">3.</span>
-                  See one strength and one concrete thing to fix — then try it again.
-                </li>
-              </ol>
-              <button
-                onClick={() => setStep(1)}
-                className="mt-2 rounded-none btn-underline bg-brand-yellow px-5 py-2 text-xs font-semibold text-on-accent hover:bg-brand-yellow-dark"
-              >
-                Get started
-              </button>
+      {phase === "steps" && (
+        <div className="animate-fade-in flex min-h-screen items-center justify-center px-6 pb-10 pt-36">
+          <div className="w-full max-w-md">
+            <div className="mb-6 flex gap-1.5">
+              {Array.from({ length: STEP_COUNT }).map((_, i) => (
+                <div
+                  key={i}
+                  className={`h-1 flex-1 rounded-full ${
+                    i < step ? "bg-brand-yellow" : "bg-stone-200 dark:bg-stone-800"
+                  }`}
+                />
+              ))}
             </div>
-          )}
 
+            <div className="rounded-2xl border border-stone-200 bg-white p-8 dark:border-stone-800 dark:bg-stone-900">
           {step === 1 && (
             <div className="flex flex-col gap-5">
               <h2 className="text-lg font-bold text-ink dark:text-stone-50">
@@ -262,8 +370,10 @@ export default function OnboardingPage() {
               </button>
             </div>
           )}
+            </div>
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }

@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { migrateLocalDataToSupabase } from "@/lib/storage";
+import { migrateLocalDataToSupabase, resetStorageCache } from "@/lib/storage";
 
 /**
  * Mounted once in the root layout. On first load — and whenever auth state
@@ -19,6 +19,8 @@ export function AuthSync() {
     migrateLocalDataToSupabase();
 
     const { data: listener } = supabase.auth.onAuthStateChange((event) => {
+      // A different person may now be signed in: drop anything cached in memory.
+      if (event === "SIGNED_IN" || event === "SIGNED_OUT") resetStorageCache();
       if (event === "SIGNED_IN") {
         migrateLocalDataToSupabase();
       }

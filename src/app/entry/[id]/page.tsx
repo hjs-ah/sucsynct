@@ -5,19 +5,24 @@ import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { NavBar } from "@/components/nav-bar";
 import { AnimatedNumber } from "@/components/animated-number";
+import { ScoreRing } from "@/components/score-ring";
 import { ScoreBars } from "@/components/score-bars";
 import { LanguageMechanics } from "@/components/language-mechanics";
 import { ModeLabel } from "@/components/mode-label";
 import { StrengthOpportunity } from "@/components/strength-opportunity";
 import { suggestExercises } from "@/lib/practice";
 import { buildAnalysis } from "@/lib/rubric";
-import { getBenchmarkEntry, getEntry } from "@/lib/storage";
+import { formatDuration, storySeconds, wordCount } from "@/lib/format";
+import { getBenchmarkEntry, getEntry, peekEntries } from "@/lib/storage";
 import type { Entry } from "@/lib/types";
 
 export default function EntryPage() {
   const params = useParams<{ id: string }>();
   const router = useRouter();
-  const [entry, setEntry] = useState<Entry | null | undefined>(undefined);
+  const [entry, setEntry] = useState<Entry | null | undefined>(() => {
+    const id = Array.isArray(params.id) ? params.id[0] : params.id;
+    return peekEntries()?.find((e) => e.id === id) ?? undefined;
+  });
   const [benchmark, setBenchmark] = useState<Entry | undefined>(undefined);
 
   useEffect(() => {
@@ -37,7 +42,12 @@ export default function EntryPage() {
     };
   }, [params.id]);
 
-  if (entry === undefined) return null;
+  if (entry === undefined)
+    return (
+      <div className="min-h-screen">
+        <NavBar />
+      </div>
+    );
 
   if (entry === null) {
     return (
@@ -58,7 +68,11 @@ export default function EntryPage() {
   const { scores } = entry;
   const isBenchmark = benchmark?.id === entry.id;
   const delta = benchmark && !isBenchmark ? scores.overall - benchmark.scores.overall : null;
-  const analysis = scores.analysis ?? buildAnalysis(scores.dimensions);
+  const analysis = scores.analysis ?? buildAnalysis(scores.dimensions, entry.mode);
+  const spoken = entry.mode !== "write";
+  const time = storySeconds(entry);
+  const words = wordCount(entry.text);
+  const halfTime = Math.max(10, Math.round(time.seconds / 2));
   const exercises = suggestExercises(scores);
 
   // Each section is separated from the one above by a thin rule and some
@@ -81,12 +95,12 @@ export default function EntryPage() {
         </div>
 
         <section className="flex flex-col items-center gap-2 text-center">
-          <div className="flex h-36 w-36 items-center justify-center rounded-full border-[3px] border-brand-blue">
+          <ScoreRing value={scores.overall} size={152} track={3} stroke={6}>
             <AnimatedNumber
               value={scores.overall}
               className="text-5xl font-extrabold text-brand-blue"
             />
-          </div>
+          </ScoreRing>
           {isBenchmark ? (
             <p className="text-xs font-semibold text-brand-blue">Your benchmark story</p>
           ) : benchmark && delta !== null ? (
@@ -106,6 +120,28 @@ export default function EntryPage() {
             {scores.verdict}
           </p>
         </section>
+
+        {words > 0 && (
+          <section className={section}>
+            <h2 className={heading}>Time</h2>
+            <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+              <span className="text-lg font-bold tabular-nums text-ink dark:text-stone-100">
+                {time.estimated ? "\u2248 " : ""}
+                {formatDuration(time.seconds)}
+              </span>
+              <span className="text-xs text-stone-500 dark:text-stone-400">
+                {time.estimated
+                  ? `to say aloud at a relaxed pace \u00b7 ${words} words`
+                  : `${spoken ? "spoken" : "recorded"} \u00b7 ${words} words \u00b7 ${Math.round(
+                      words / (time.seconds / 60),
+                    )} words/min`}
+              </span>
+            </div>
+            <p className="mt-2 text-xs text-stone-500 dark:text-stone-400">
+              Half the time would be {formatDuration(halfTime)}. Tighter usually lands better.
+            </p>
+          </section>
+        )}
 
         {entry.selfScore !== undefined && (
           <section className={section}>
@@ -154,7 +190,7 @@ export default function EntryPage() {
           <div className="flex flex-col gap-6">
             <div>
               <p className="mb-1 text-xs font-semibold text-stone-500 dark:text-stone-400">
-                Analysis 1 &middot; What was strong
+                Strength
               </p>
               <p className="text-sm leading-relaxed text-stone-700 dark:text-stone-300">
                 {analysis.strong}
@@ -162,7 +198,7 @@ export default function EntryPage() {
             </div>
             <div>
               <p className="mb-1 text-xs font-semibold text-stone-500 dark:text-stone-400">
-                Analysis 2 &middot; What could improve
+                Opportunity
               </p>
               <p className="text-sm leading-relaxed text-stone-700 dark:text-stone-300">
                 {analysis.improve}
@@ -191,6 +227,12 @@ export default function EntryPage() {
               </li>
             ))}
           </ol>
+          <Link
+            href={`/challenge?from=${entry.id}`}
+            className="mt-5 inline-flex items-center gap-2 rounded-md bg-brand-yellow px-4 py-2 text-xs font-semibold text-on-accent transition-colors hover:bg-brand-yellow-dark"
+          >
+            Try the half-time challenge ({formatDuration(halfTime)})
+          </Link>
         </section>
 
         <section className={section}>

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { XIcon } from "@/components/icons";
-import { hasSeenTour, markTourSeen } from "@/lib/tours";
+import { hasSeenTourForAccount, markTourSeen } from "@/lib/tours";
 
 export interface TourStep {
   /** DOM id of the element this step points at — must already be rendered. */
@@ -30,8 +30,15 @@ export function TourOverlay({ tourId, steps }: { tourId: string; steps: TourStep
   const [rect, setRect] = useState<DOMRect | null>(null);
 
   useEffect(() => {
-    setDone(hasSeenTour(tourId));
-    setReady(true);
+    let cancelled = false;
+    hasSeenTourForAccount(tourId).then((seen) => {
+      if (cancelled) return;
+      setDone(seen);
+      setReady(true);
+    });
+    return () => {
+      cancelled = true;
+    };
   }, [tourId]);
 
   useEffect(() => {

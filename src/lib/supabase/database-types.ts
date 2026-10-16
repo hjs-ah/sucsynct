@@ -20,6 +20,7 @@ export type Database = {
         Row: {
           audience: string;
           created_at: string;
+          duration_seconds: number | null;
           goal: string;
           id: string;
           mode: string;
@@ -31,6 +32,7 @@ export type Database = {
         Insert: {
           audience?: string;
           created_at?: string;
+          duration_seconds?: number | null;
           goal?: string;
           id?: string;
           mode: string;
@@ -42,6 +44,7 @@ export type Database = {
         Update: {
           audience?: string;
           created_at?: string;
+          duration_seconds?: number | null;
           goal?: string;
           id?: string;
           mode?: string;
@@ -58,24 +61,33 @@ export type Database = {
           auto_delete_audio: boolean;
           created_at: string;
           focus: string[];
+          goal_period: string;
+          goal_target: number | null;
           id: string;
           onboarded: boolean;
+          tours_seen: string[];
         };
         Insert: {
           analyzer_strictness?: string;
           auto_delete_audio?: boolean;
           created_at?: string;
           focus?: string[];
+          goal_period?: string;
+          goal_target?: number | null;
           id: string;
           onboarded?: boolean;
+          tours_seen?: string[];
         };
         Update: {
           analyzer_strictness?: string;
           auto_delete_audio?: boolean;
           created_at?: string;
           focus?: string[];
+          goal_period?: string;
+          goal_target?: number | null;
           id?: string;
           onboarded?: boolean;
+          tours_seen?: string[];
         };
         Relationships: [];
       };

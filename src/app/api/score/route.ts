@@ -23,7 +23,7 @@ async function summarize(anthropic: Anthropic, text: string): Promise<string | u
     return undefined;
   }
 }
-import { DIMENSION_ORDER, type AnalyzerStrictness, type ScoreResult } from "@/lib/types";
+import { DIMENSION_ORDER, type AnalyzerStrictness, type Mode, type ScoreResult } from "@/lib/types";
 
 const VALID_STRICTNESS: AnalyzerStrictness[] = ["supportive", "moderate", "strict"];
 
@@ -33,6 +33,8 @@ export async function POST(request: Request) {
     audience?: string;
     goal?: string;
     strictness?: string;
+    mode?: string;
+    durationSeconds?: number;
   };
 
   const text = (body.text ?? "").trim();
@@ -44,6 +46,14 @@ export async function POST(request: Request) {
     ? (body.strictness as AnalyzerStrictness)
     : "strict";
 
+  const mode = (['speak', 'write', 'upload'] as Mode[]).includes(body.mode as Mode)
+    ? (body.mode as Mode)
+    : undefined;
+  const durationSeconds =
+    typeof body.durationSeconds === "number" && body.durationSeconds > 0
+      ? Math.round(body.durationSeconds)
+      : undefined;
+
   if (!text) {
     return Response.json({ error: "Text is required." }, { status: 400 });
   }
@@ -52,7 +62,7 @@ export async function POST(request: Request) {
 
   if (!apiKey) {
     // No key configured — keep the prototype usable with the local scorer.
-    return Response.json({ scores: mockScore(text, strictness), source: "mock" });
+    return Response.json({ scores: mockScore(text, strictness, mode, durationSeconds), source: "mock" });
   }
 
   try {
@@ -63,7 +73,7 @@ export async function POST(request: Request) {
       anthropic.messages.create({
         model,
         max_tokens: 900,
-        messages: [{ role: "user", content: buildScoringPrompt(text, audience, goal, strictness) }],
+        messages: [{ role: "user", content: buildScoringPrompt(text, audience, goal, strictness, mode, durationSeconds) }],
       }),
       summarize(anthropic, text),
     ]);
@@ -100,12 +110,13 @@ export async function POST(request: Request) {
         analysis,
         summary,
       },
-      text
+      text,
+      mode
     );
 
     return Response.json({ scores, source: "claude" });
   } catch (err) {
     console.error("Scoring via Claude failed, falling back to mock scorer:", err);
-    return Response.json({ scores: mockScore(text, strictness), source: "mock-fallback" });
+    return Response.json({ scores: mockScore(text, strictness, mode, durationSeconds), source: "mock-fallback" });
   }
 }

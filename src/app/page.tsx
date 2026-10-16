@@ -4,14 +4,22 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AnimatedNumber } from "@/components/animated-number";
+import { GoalCard } from "@/components/goal-card";
+import { ScoreRing } from "@/components/score-ring";
 import { FlameIcon } from "@/components/icons";
 import { ModeLabel } from "@/components/mode-label";
 import { NavBar } from "@/components/nav-bar";
 import { SignOutButton } from "@/components/sign-out-button";
 import { TourOverlay, type TourStep } from "@/components/tour";
 import { storySnippet, timeAgo } from "@/lib/format";
-import { getBenchmarkEntry, getEntries, getPreferences } from "@/lib/storage";
-import type { Entry } from "@/lib/types";
+import {
+  getEntries,
+  getPreferences,
+  peekEntries,
+  peekPreferences,
+  savePreferences,
+} from "@/lib/storage";
+import type { Entry, GoalPeriod, Preferences } from "@/lib/types";
 
 const HOME_TOUR: TourStep[] = [
   {
@@ -75,28 +83,45 @@ function monthlyAverage(entries: Entry[]) {
 
 export default function HomePage() {
   const router = useRouter();
-  const [entries, setEntries] = useState<Entry[] | null>(null);
+  // Start from whatever was loaded last (if anything) so coming back to Home
+  // from another page paints instantly, then refresh in the background.
+  const [entries, setEntries] = useState<Entry[] | null>(() => peekEntries());
+  const [prefs, setPrefs] = useState<Preferences | null>(() => peekPreferences());
   const [sortBy, setSortBy] = useState<SortBy>("date");
-  const [benchmark, setBenchmark] = useState<Entry | undefined>(undefined);
 
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      const prefs = await getPreferences();
+      const [prefsData, entriesData] = await Promise.all([getPreferences(), getEntries()]);
       if (cancelled) return;
-      if (!prefs.onboarded) {
-        router.replace("/onboarding");
-        return;
+      if (!prefsData.onboarded) {
+        if (entriesData.length === 0) {
+          router.replace("/onboarding");
+          return;
+        }
+        // Someone who already has stories has been through this: remember it
+        // instead of sending them back through onboarding.
+        void savePreferences({ onboarded: true });
       }
-      const [entriesData, benchmarkData] = await Promise.all([getEntries(), getBenchmarkEntry()]);
-      if (cancelled) return;
+      setPrefs(prefsData);
       setEntries(entriesData);
-      setBenchmark(benchmarkData);
     })();
     return () => {
       cancelled = true;
     };
   }, [router]);
+
+  async function handleSaveGoal(period: GoalPeriod, target: number | null) {
+    const next = await savePreferences({ goalPeriod: period, goalTarget: target });
+    setPrefs(next);
+  }
+
+  const benchmark = entries && entries.length > 0 ? entries[entries.length - 1] : undefined;
+  // Strictly greater, so a tie goes to the most recent (entries are newest-first).
+  const strongest = entries?.reduce<Entry | undefined>(
+    (best, e) => (!best || e.scores.overall > best.scores.overall ? e : best),
+    undefined,
+  );
 
   const sorted = useMemo(() => {
     if (!entries) return [];
@@ -107,8 +132,12 @@ export default function HomePage() {
   const monthly = entries ? monthlyAverage(entries) : null;
   const streak = entries ? currentStreak(entries) : 0;
 
-  if (entries === null) {
-    return null;
+  if (entries === null || prefs === null || (!prefs.onboarded && entries.length === 0)) {
+    return (
+      <div className="min-h-screen">
+        <NavBar />
+      </div>
+    );
   }
 
   return (
@@ -165,16 +194,12 @@ export default function HomePage() {
               {monthly ? (
                 <>
                   <div className="flex items-center gap-2.5">
-                    <div
-                      className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full"
-                      style={{
-                        background: `conic-gradient(var(--brand-blue) ${monthly.average * 3.6}deg, var(--track) 0deg)`,
-                      }}
-                    >
-                      <div className="flex h-9 w-9 items-center justify-center rounded-full bg-stone-50 text-xs font-extrabold text-ink dark:bg-stone-950 dark:text-stone-50">
-                        <AnimatedNumber value={monthly.average} />
-                      </div>
-                    </div>
+                    <ScoreRing value={monthly.average} size={52} track={2} stroke={5}>
+                      <AnimatedNumber
+                        value={monthly.average}
+                        className="text-xs font-extrabold text-ink dark:text-stone-50"
+                      />
+                    </ScoreRing>
                     <div className="flex h-12 min-w-0 flex-1 items-end gap-1">
                       {monthly.entries
                         .slice(0, 8)
@@ -200,6 +225,53 @@ export default function HomePage() {
                 </p>
               )}
             </div>
+          </div>
+        )}
+
+        {entries.length > 0 && strongest && (
+          <div className="mt-3 grid grid-cols-2 gap-3">
+            <Link
+              href={`/entry/${strongest.id}`}
+              className="flex min-w-0 flex-col gap-1 rounded-xl border border-stone-200 p-3.5 transition-colors hover:border-brand-blue/50 dark:border-stone-800"
+            >
+              <span className="text-[10px] font-bold uppercase leading-tight tracking-wide text-stone-500 dark:text-stone-400">
+                Strongest sync
+              </span>
+              <span className="flex items-baseline gap-1.5">
+                <AnimatedNumber
+                  value={strongest.scores.overall}
+                  className="text-2xl font-extrabold text-brand-blue"
+                />
+                <span className="text-xs font-semibold text-brand-blue">see feedback &rarr;</span>
+              </span>
+              <span className="truncate text-xs text-stone-500 dark:text-stone-400">
+                {storySnippet(strongest)}
+              </span>
+            </Link>
+            <Link
+              href="/challenge"
+              className="flex min-w-0 flex-col gap-1 rounded-xl border border-stone-200 p-3.5 transition-colors hover:border-brand-blue/50 dark:border-stone-800"
+            >
+              <span className="text-[10px] font-bold uppercase leading-tight tracking-wide text-stone-500 dark:text-stone-400">
+                Half-time challenge
+              </span>
+              <span className="text-sm font-bold text-ink dark:text-stone-100">
+                Say it in half the time
+              </span>
+              <span className="text-xs font-semibold text-brand-blue">Play &rarr;</span>
+            </Link>
+          </div>
+        )}
+
+        {entries.length > 0 && (
+          <div className="mt-3">
+            <GoalCard
+              entries={entries}
+              period={prefs.goalPeriod}
+              target={prefs.goalTarget}
+              signedIn={Boolean(prefs.email)}
+              onSave={handleSaveGoal}
+            />
           </div>
         )}
 

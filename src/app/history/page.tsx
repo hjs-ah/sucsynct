@@ -7,7 +7,7 @@ import { ModeLabel } from "@/components/mode-label";
 import { NavBar } from "@/components/nav-bar";
 import { TourOverlay, type TourStep } from "@/components/tour";
 import { storySnippet, timeAgo } from "@/lib/format";
-import { getEntries } from "@/lib/storage";
+import { getEntries, peekEntries } from "@/lib/storage";
 import type { Entry } from "@/lib/types";
 
 const HISTORY_TOUR: TourStep[] = [
@@ -37,7 +37,7 @@ function groupByDate(entries: Entry[]) {
 }
 
 export default function HistoryPage() {
-  const [entries, setEntries] = useState<Entry[] | null>(null);
+  const [entries, setEntries] = useState<Entry[] | null>(() => peekEntries());
 
   useEffect(() => {
     let cancelled = false;
@@ -49,7 +49,12 @@ export default function HistoryPage() {
     };
   }, []);
 
-  if (entries === null) return null;
+  if (entries === null)
+    return (
+      <div className="min-h-screen">
+        <NavBar />
+      </div>
+    );
 
   const groups = groupByDate(entries);
 

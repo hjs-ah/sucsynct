@@ -6,6 +6,7 @@ import {
   DEFAULT_PREFERENCES,
   type AnalyzerStrictness,
   type Entry,
+  type GoalPeriod,
   type Mode,
   type Preferences,
   type ScoreResult,
@@ -21,6 +22,16 @@ import {
 const ENTRIES_KEY = "sucsynct:entries";
 const PREFS_KEY = "sucsynct:prefs";
 const MIGRATED_KEY = "sucsynct:migrated";
+const TOURS_SEEN_KEY = "sucsynct:tours-seen";
+
+function localGetSeenTours(): string[] {
+  if (!isBrowser()) return [];
+  try {
+    return JSON.parse(window.localStorage.getItem(TOURS_SEEN_KEY) ?? "[]") as string[];
+  } catch {
+    return [];
+  }
+}
 
 // Old key prefix from when the app was called TellSync. Renamed the
 // product, not the storage format, so we carry over anyone's existing
@@ -135,6 +146,7 @@ function rowToEntry(row: EntryRow): Entry {
     text: row.story_text,
     scores: row.scores as unknown as ScoreResult,
     selfScore: row.self_score ?? undefined,
+    durationSeconds: row.duration_seconds ?? undefined,
   };
 }
 
@@ -149,12 +161,16 @@ function entryToRow(entry: Entry, userId: string) {
     story_text: entry.text,
     scores: entry.scores as unknown as Json,
     self_score: entry.selfScore ?? null,
+    duration_seconds: entry.durationSeconds ?? null,
   };
 }
 
 function profileRowToPreferences(row: ProfileRow, email: string): Preferences {
   return {
     onboarded: row.onboarded,
+    toursSeen: row.tours_seen ?? [],
+    goalPeriod: (row.goal_period as GoalPeriod) ?? "week",
+    goalTarget: row.goal_target ?? null,
     focus: row.focus,
     email,
     autoDeleteAudio: row.auto_delete_audio,
@@ -164,23 +180,67 @@ function profileRowToPreferences(row: ProfileRow, email: string): Preferences {
 
 // --------------------------------------------------------------- public ----
 
-export async function getEntries(): Promise<Entry[]> {
-  const supabase = createClient();
-  const { data: auth } = await supabase.auth.getUser();
-  if (!auth.user) return localGetEntries();
+// Auth + data reads used to make several network round trips per page
+// (getUser() calls Supabase every time). We now read the session from the
+// local cookie/storage (instant; row-level security still enforces access on
+// the server) and keep the last results in memory, so moving between pages
+// can paint immediately and refresh in the background.
 
-  const { data, error } = await supabase
-    .from("entries")
-    .select("*")
-    .order("created_at", { ascending: false });
-  if (error || !data) return [];
-  return data.map(rowToEntry);
+async function currentUser() {
+  const supabase = createClient();
+  const { data } = await supabase.auth.getSession();
+  return { supabase, user: data.session?.user ?? null };
+}
+
+let entriesCache: Entry[] | null = null;
+let entriesInflight: Promise<Entry[]> | null = null;
+let prefsCache: Preferences | null = null;
+
+/** Last-known entries, or null if none have been loaded yet this visit. */
+export function peekEntries(): Entry[] | null {
+  return entriesCache;
+}
+
+/** Last-known preferences, or null if none have been loaded yet this visit. */
+export function peekPreferences(): Preferences | null {
+  return prefsCache;
+}
+
+/** Forget everything in memory (call on sign-out / account switch). */
+export function resetStorageCache() {
+  entriesCache = null;
+  entriesInflight = null;
+  prefsCache = null;
+}
+
+export async function getEntries(): Promise<Entry[]> {
+  if (entriesInflight) return entriesInflight;
+  entriesInflight = (async () => {
+    try {
+      const { supabase, user } = await currentUser();
+      if (!user) {
+        entriesCache = localGetEntries();
+        return entriesCache;
+      }
+      const { data, error } = await supabase
+        .from("entries")
+        .select("*")
+        .order("created_at", { ascending: false });
+      if (error || !data) return entriesCache ?? [];
+      entriesCache = data.map(rowToEntry);
+      return entriesCache;
+    } finally {
+      entriesInflight = null;
+    }
+  })();
+  return entriesInflight;
 }
 
 export async function getEntry(id: string): Promise<Entry | undefined> {
-  const supabase = createClient();
-  const { data: auth } = await supabase.auth.getUser();
-  if (!auth.user) return localGetEntries().find((e) => e.id === id);
+  const cached = entriesCache?.find((e) => e.id === id);
+  if (cached) return cached;
+  const { supabase, user } = await currentUser();
+  if (!user) return localGetEntries().find((e) => e.id === id);
 
   const { data, error } = await supabase.from("entries").select("*").eq("id", id).maybeSingle();
   if (error || !data) return undefined;
@@ -189,8 +249,8 @@ export async function getEntry(id: string): Promise<Entry | undefined> {
 
 /**
  * The very first entry ever saved — the benchmark story from onboarding
- * that every later score is compared against. getEntries() sorts
- * newest-first, so it's the last item.
+ * that every later score is compared against. Entries are newest-first, so
+ * it's the last item.
  */
 export async function getBenchmarkEntry(): Promise<Entry | undefined> {
   const entries = await getEntries();
@@ -198,56 +258,65 @@ export async function getBenchmarkEntry(): Promise<Entry | undefined> {
 }
 
 export async function saveEntry(entry: Entry): Promise<void> {
-  const supabase = createClient();
-  const { data: auth } = await supabase.auth.getUser();
-  if (!auth.user) {
+  const { supabase, user } = await currentUser();
+  if (!user) {
     localSaveEntry(entry);
-    return;
+  } else {
+    await supabase.from("entries").insert(entryToRow(entry, user.id));
   }
-  await supabase.from("entries").insert(entryToRow(entry, auth.user.id));
+  entriesCache = [entry, ...(entriesCache ?? [])].sort(
+    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+  );
 }
 
 export async function getPreferences(): Promise<Preferences> {
-  const supabase = createClient();
-  const { data: auth } = await supabase.auth.getUser();
-  if (!auth.user) return localGetPreferences();
+  const { supabase, user } = await currentUser();
+  if (!user) {
+    prefsCache = localGetPreferences();
+    return prefsCache;
+  }
 
-  const { data } = await supabase.from("profiles").select("*").eq("id", auth.user.id).maybeSingle();
-  if (!data) return { ...DEFAULT_PREFERENCES, email: auth.user.email ?? "" };
-  return profileRowToPreferences(data, auth.user.email ?? "");
+  const { data } = await supabase.from("profiles").select("*").eq("id", user.id).maybeSingle();
+  prefsCache = data
+    ? profileRowToPreferences(data, user.email ?? "")
+    : { ...DEFAULT_PREFERENCES, email: user.email ?? "" };
+  return prefsCache;
 }
 
 export async function savePreferences(update: Partial<Preferences>): Promise<Preferences> {
-  const supabase = createClient();
-  const { data: auth } = await supabase.auth.getUser();
-  if (!auth.user) return localSavePreferences(update);
+  const { supabase, user } = await currentUser();
+  if (!user) {
+    prefsCache = localSavePreferences(update);
+    return prefsCache;
+  }
 
-  const current = await getPreferences();
+  const current = prefsCache ?? (await getPreferences());
   const next = { ...current, ...update };
+  prefsCache = next;
   await supabase
     .from("profiles")
     .update({
       onboarded: next.onboarded,
+      tours_seen: next.toursSeen,
+      goal_period: next.goalPeriod,
+      goal_target: next.goalTarget,
       focus: next.focus,
       auto_delete_audio: next.autoDeleteAudio,
       analyzer_strictness: next.analyzerStrictness,
     })
-    .eq("id", auth.user.id);
+    .eq("id", user.id);
   return next;
 }
 
 export async function clearAllData(): Promise<void> {
-  const supabase = createClient();
-  const { data: auth } = await supabase.auth.getUser();
-  if (!auth.user) {
+  const { supabase, user } = await currentUser();
+  if (!user) {
     localClearAllData();
-    return;
+  } else {
+    await supabase.from("entries").delete().eq("user_id", user.id);
+    await supabase.from("profiles").update({ onboarded: false, focus: [] }).eq("id", user.id);
   }
-  await supabase.from("entries").delete().eq("user_id", auth.user.id);
-  await supabase
-    .from("profiles")
-    .update({ onboarded: false, focus: [] })
-    .eq("id", auth.user.id);
+  resetStorageCache();
 }
 
 /**
@@ -260,18 +329,17 @@ export async function clearAllData(): Promise<void> {
  */
 export async function migrateLocalDataToSupabase(): Promise<void> {
   if (!isBrowser()) return;
-  const supabase = createClient();
-  const { data: auth } = await supabase.auth.getUser();
-  if (!auth.user) return;
+  const { supabase, user } = await currentUser();
+  if (!user) return;
 
-  const flag = `${MIGRATED_KEY}:${auth.user.id}`;
+  const flag = `${MIGRATED_KEY}:${user.id}`;
   if (window.localStorage.getItem(flag)) return;
 
   const localEntries = localGetEntries();
   const localPrefs = localGetPreferences();
 
   if (localEntries.length > 0) {
-    const rows = localEntries.map((e) => entryToRow(e, auth.user!.id));
+    const rows = localEntries.map((e) => entryToRow(e, user.id));
     await supabase.from("entries").insert(rows);
   }
 
@@ -280,13 +348,17 @@ export async function migrateLocalDataToSupabase(): Promise<void> {
       .from("profiles")
       .update({
         onboarded: localPrefs.onboarded,
+        tours_seen: localGetSeenTours(),
+        goal_period: localPrefs.goalPeriod,
+        goal_target: localPrefs.goalTarget,
         focus: localPrefs.focus,
         auto_delete_audio: localPrefs.autoDeleteAudio,
         analyzer_strictness: localPrefs.analyzerStrictness,
       })
-      .eq("id", auth.user.id);
+      .eq("id", user.id);
   }
 
   window.localStorage.setItem(flag, "1");
   localClearAllData();
+  resetStorageCache();
 }

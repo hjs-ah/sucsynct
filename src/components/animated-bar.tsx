@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { InfoTip } from "@/components/info-tip";
 import { useCountUp } from "@/lib/use-count-up";
 
 function defaultColor(score: number) {
@@ -13,9 +14,11 @@ export function AnimatedBar({
   label,
   value,
   suffix = "",
+  info,
   colorFor = defaultColor,
 }: {
   label: string;
+  info?: string;
   value: number;
   suffix?: string;
   colorFor?: (value: number) => string;
@@ -31,8 +34,11 @@ export function AnimatedBar({
   }, [value]);
 
   return (
-    <div className="flex items-center gap-3">
-      <div className="w-32 shrink-0 text-xs text-stone-500 dark:text-stone-400">{label}</div>
+    <div className="relative flex items-center gap-3">
+      <div className="flex w-36 shrink-0 items-center gap-1.5 text-xs text-stone-500 dark:text-stone-400">
+        {label}
+        {info && <InfoTip label={label} text={info} />}
+      </div>
       <div className="h-2 flex-1 overflow-hidden rounded-full bg-stone-200 dark:bg-stone-800">
         <div
           className={`h-full rounded-full transition-[width] duration-700 ease-out ${colorFor(value)}`}

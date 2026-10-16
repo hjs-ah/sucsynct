@@ -4,6 +4,7 @@ import {
   type AnalyzerStrictness,
   type Dimension,
   type FillerWordHit,
+  type Mode,
   type ScoreResult,
 } from "./types";
 
@@ -117,22 +118,36 @@ const OPPORTUNITY_PHRASES: Record<Dimension, string> = {
   voice: "let more of how you'd actually say this come through",
 };
 
-const STRONG_DETAIL: Record<Dimension, string> = {
-  messageClarity: "A reader can tell what you want them to take away without hunting for it.",
-  structure: "It has a recognizable shape: a way in, a turn, and somewhere to land.",
-  brevity: "Sentences earn their place. Nothing here feels padded.",
-  specificity: "Concrete details do the persuading instead of general claims.",
-  audienceFit: "It reads as though it was written for a particular listener.",
-  voice: "It sounds like a person talking, not a template.",
+// Spoken and uploaded-audio entries are judged by what a listener hears;
+// written ones by what a reader sees. Same rubric, different wording.
+export function audienceWord(mode: Mode | undefined): "listener" | "reader" {
+  return mode === "speak" || mode === "upload" ? "listener" : "reader";
+}
+
+const STRONG_DETAIL: Record<Dimension, (who: string) => string> = {
+  messageClarity: (who) => `A ${who} can tell what you want them to take away without hunting for it.`,
+  structure: () => "It has a recognizable shape: a way in, a turn, and somewhere to land.",
+  brevity: () => "Sentences earn their place. Nothing here feels padded.",
+  specificity: () => "Concrete details do the persuading instead of general claims.",
+  audienceFit: (who) => `It comes across as though it was meant for one particular ${who}.`,
+  voice: (who) =>
+    who === "listener"
+      ? "It sounds like a person talking to someone, not reciting a template."
+      : "It sounds like a person, not a template.",
 };
 
-const IMPROVE_DETAIL: Record<Dimension, string> = {
-  messageClarity: "State the one takeaway up front, in a single plain sentence, then support it.",
-  structure: "Give it a clearer beginning, a moment where something changes, and a deliberate ending.",
-  brevity: "Cut anything that doesn't serve the one thing you want remembered, then cut a little more.",
-  specificity: "Replace one general claim with a number, a name, or a moment someone could picture.",
-  audienceFit: "Say who this is for and what they care about earlier, so the stakes are clear sooner.",
-  voice: "Keep the phrases you'd actually say out loud and drop the ones that sound like a form letter.",
+const IMPROVE_DETAIL: Record<Dimension, (who: string) => string> = {
+  messageClarity: (who) =>
+    `State the one takeaway up front, in a single plain sentence, so the ${who} knows what to hold on to, then support it.`,
+  structure: () => "Give it a clearer beginning, a moment where something changes, and a deliberate ending.",
+  brevity: () => "Cut anything that doesn't serve the one thing you want remembered, then cut a little more.",
+  specificity: () => "Replace one general claim with a number, a name, or a moment someone could picture.",
+  audienceFit: (who) =>
+    `Say who this is for and what they care about earlier, so the ${who} sees the stakes sooner.`,
+  voice: (who) =>
+    who === "listener"
+      ? "Keep the phrases you'd actually say out loud and drop the ones that sound read from a page."
+      : "Keep the phrases you'd actually say out loud and drop the ones that sound like a form letter.",
 };
 
 function strongestAndWeakest(dimensions: Record<Dimension, number>) {
@@ -145,14 +160,16 @@ function strongestAndWeakest(dimensions: Record<Dimension, number>) {
   return { strongest, weakest };
 }
 
-/** Plain-language "Analysis 1 / Analysis 2" built from the dimension scores. */
+/** Plain-language strength and opportunity paragraphs from the dimension scores. */
 export function buildAnalysis(
-  dimensions: Record<Dimension, number>
+  dimensions: Record<Dimension, number>,
+  mode?: Mode
 ): { strong: string; improve: string } {
   const { strongest, weakest } = strongestAndWeakest(dimensions);
+  const who = audienceWord(mode);
   return {
-    strong: `${DIMENSION_LABELS[strongest]} is your strongest area. ${STRONG_DETAIL[strongest]}`,
-    improve: `${DIMENSION_LABELS[weakest]} has the most room to grow. ${IMPROVE_DETAIL[weakest]}`,
+    strong: `${DIMENSION_LABELS[strongest]} is your strongest area. ${STRONG_DETAIL[strongest](who)}`,
+    improve: `${DIMENSION_LABELS[weakest]} has the most room to grow. ${IMPROVE_DETAIL[weakest](who)}`,
   };
 }
 
@@ -180,11 +197,12 @@ function deriveStrengthOpportunity(dimensions: Record<Dimension, number>) {
 export function enrichScore(
   base: Pick<ScoreResult, "overall" | "dimensions" | "verdict" | "evidence"> &
     Partial<Pick<ScoreResult, "analysis" | "summary">>,
-  text: string
+  text: string,
+  mode?: Mode
 ): ScoreResult {
   return {
     ...base,
-    analysis: base.analysis ?? buildAnalysis(base.dimensions),
+    analysis: base.analysis ?? buildAnalysis(base.dimensions, mode),
     ...deriveStrengthOpportunity(base.dimensions),
     ...analyzeLanguage(text),
   };
@@ -195,7 +213,12 @@ export function enrichScore(
  * It is intentionally rough — it exists to make the UI feel alive during
  * local development, not to replace the real rubric call in production.
  */
-export function mockScore(text: string, strictness: AnalyzerStrictness = "strict"): ScoreResult {
+export function mockScore(
+  text: string,
+  strictness: AnalyzerStrictness = "strict",
+  mode?: Mode,
+  durationSeconds?: number
+): ScoreResult {
   const { penalty } = STRICTNESS_SETTINGS[strictness];
   const trimmed = text.trim();
   const words = trimmed.length ? trimmed.split(/\s+/) : [];
@@ -265,7 +288,8 @@ export function mockScore(text: string, strictness: AnalyzerStrictness = "strict
         ? `"${firstSentence.slice(0, 140)}${firstSentence.length > 140 ? "…" : ""}" — this is where the reader either leans in or checks out.`
         : "",
     },
-    text
+    text,
+    mode
   );
 }
 
@@ -274,8 +298,19 @@ export function buildScoringPrompt(
   text: string,
   audience: string,
   goal: string,
-  strictness: AnalyzerStrictness = "strict"
+  strictness: AnalyzerStrictness = "strict",
+  mode?: Mode,
+  durationSeconds?: number
 ) {
+  const who = audienceWord(mode);
+  const spoken = who === "listener";
+  const words = text.trim() ? text.trim().split(/\s+/).length : 0;
+  const timing =
+    spoken && durationSeconds
+      ? `This was spoken aloud and took ${Math.floor(durationSeconds / 60)}:${String(durationSeconds % 60).padStart(2, "0")} (about ${Math.round(words / (durationSeconds / 60))} words per minute). Where it genuinely helps, comment on pacing and length, for example whether it could land in half the time.`
+      : spoken
+        ? "This was spoken aloud and transcribed."
+        : "This was written, not spoken.";
   return `You are a story and message coach. Score the piece below on a 0-100 scale for each dimension, and give one overall 0-100 score (the average, rounded). ${STRICTNESS_SETTINGS[strictness].promptInstruction}
 
 Dimensions:
@@ -285,6 +320,9 @@ Dimensions:
 - specificity: concrete detail over generic claims?
 - audienceFit: is it aimed at who will actually hear/read it?
 - voice: does it sound like a person, not a template?
+
+Format: ${timing}
+Write your analysis for the ${who}: refer to the audience as "the ${who}", not the other word.
 
 Audience: ${audience || "not specified"}
 Goal: ${goal || "not specified"}

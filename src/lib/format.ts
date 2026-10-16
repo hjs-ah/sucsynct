@@ -29,3 +29,32 @@ export function storySnippet(entry: Pick<Entry, "text" | "scores">): string {
   const cut = raw.length > SNIPPET_MAX ? raw.slice(0, SNIPPET_MAX) : raw;
   return `${cut.replace(/[\s.…,;:-]+$/, "")}…`;
 }
+
+/** 161 -> "2:41". */
+export function formatDuration(totalSeconds: number): string {
+  const s = Math.max(0, Math.round(totalSeconds));
+  return `${Math.floor(s / 60)}:${(s % 60).toString().padStart(2, "0")}`;
+}
+
+export function wordCount(text: string): number {
+  const t = text.trim();
+  return t ? t.split(/\s+/).length : 0;
+}
+
+// A comfortable speaking pace; used to estimate how long written text takes
+// to say aloud.
+export const SPEAKING_WPM = 150;
+
+export function estimateSpokenSeconds(text: string): number {
+  return Math.round((wordCount(text) / SPEAKING_WPM) * 60);
+}
+
+/** The time a story took: the recorded length if we have one, else an estimate. */
+export function storySeconds(entry: Pick<Entry, "text" | "durationSeconds">): {
+  seconds: number;
+  estimated: boolean;
+} {
+  return entry.durationSeconds
+    ? { seconds: entry.durationSeconds, estimated: false }
+    : { seconds: estimateSpokenSeconds(entry.text), estimated: true };
+}

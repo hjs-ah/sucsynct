@@ -1,11 +1,16 @@
-import { DIMENSION_LABELS, DIMENSION_ORDER, type ScoreResult } from "@/lib/types";
+import { DIMENSION_HELP, DIMENSION_LABELS, DIMENSION_ORDER, type ScoreResult } from "@/lib/types";
 import { AnimatedBar } from "./animated-bar";
 
 export function ScoreBars({ scores }: { scores: ScoreResult }) {
   return (
     <div className="flex flex-col gap-2.5">
       {DIMENSION_ORDER.map((dim) => (
-        <AnimatedBar key={dim} label={DIMENSION_LABELS[dim]} value={scores.dimensions[dim]} />
+        <AnimatedBar
+          key={dim}
+          label={DIMENSION_LABELS[dim]}
+          value={scores.dimensions[dim]}
+          info={DIMENSION_HELP[dim]}
+        />
       ))}
     </div>
   );

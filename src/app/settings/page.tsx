@@ -7,7 +7,7 @@ import { AnalyzerSelector } from "@/components/analyzer-selector";
 import { NavBar } from "@/components/nav-bar";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { TourOverlay, type TourStep } from "@/components/tour";
-import { clearAllData, getPreferences, savePreferences } from "@/lib/storage";
+import { clearAllData, getPreferences, peekPreferences, savePreferences } from "@/lib/storage";
 import { resetTours } from "@/lib/tours";
 import {
   STRICTNESS_DESCRIPTIONS,
@@ -30,7 +30,7 @@ const SETTINGS_TOUR: TourStep[] = [
 
 export default function SettingsPage() {
   const router = useRouter();
-  const [prefs, setPrefs] = useState<Preferences | null>(null);
+  const [prefs, setPrefs] = useState<Preferences | null>(() => peekPreferences());
   const [confirmClear, setConfirmClear] = useState(false);
   const [toursReset, setToursReset] = useState(false);
   const [newFocusInput, setNewFocusInput] = useState("");
@@ -82,7 +82,12 @@ export default function SettingsPage() {
     router.replace("/onboarding");
   }
 
-  if (!prefs) return null;
+  if (!prefs)
+    return (
+      <div className="min-h-screen">
+        <NavBar />
+      </div>
+    );
 
   return (
     <div className="min-h-screen">

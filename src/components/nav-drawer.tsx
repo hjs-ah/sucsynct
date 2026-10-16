@@ -7,6 +7,7 @@ import { createPortal } from "react-dom";
 import { createClient } from "@/lib/supabase/client";
 import { ThemeToggle } from "@/components/theme-toggle";
 import {
+  FlameIcon,
   HistoryIcon,
   HomeIcon,
   LogInIcon,
@@ -21,6 +22,7 @@ const LINKS = [
   { href: "/", label: "Home", icon: HomeIcon },
   { href: "/notes", label: "Quick notes", icon: NotesIcon },
   { href: "/history", label: "History", icon: HistoryIcon },
+  { href: "/challenge", label: "Half-time challenge", icon: FlameIcon },
   { href: "/settings", label: "Settings", icon: SettingsIcon },
 ];
 

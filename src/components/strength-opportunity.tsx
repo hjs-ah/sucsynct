@@ -7,7 +7,7 @@ export function StrengthOpportunity({ scores }: { scores: ScoreResult }) {
         <span className="font-bold">Strength</span> — {scores.strength}
       </div>
       <div className="rounded-lg border border-stone-300 bg-stone-100 text-stone-700 dark:border-stone-700 dark:bg-stone-800/60 dark:text-stone-300 p-2.5 text-xs">
-        <span className="font-bold">How to improve</span> — {scores.opportunity}
+        <span className="font-bold">Opportunity</span> — {scores.opportunity}
       </div>
     </div>
   );

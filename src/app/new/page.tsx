@@ -2,6 +2,7 @@
 
 import { AudioTooLongError, splitAudioForTranscription } from "@/lib/audio-chunks";
 import { useRouter } from "next/navigation";
+import { SuggestInput } from "@/components/suggest-input";
 import { useEffect, useRef, useState } from "react";
 import { AnalyzerSelector } from "@/components/analyzer-selector";
 import { NavBar } from "@/components/nav-bar";
@@ -14,7 +15,7 @@ import {
   StopIcon,
 } from "@/components/icons";
 import { TourOverlay, type TourStep } from "@/components/tour";
-import { getPreferences, makeId, saveEntry, savePreferences } from "@/lib/storage";
+import { getEntries, getPreferences, makeId, saveEntry, savePreferences } from "@/lib/storage";
 import { mockScore } from "@/lib/rubric";
 import type { AnalyzerStrictness, Mode, ScoreResult } from "@/lib/types";
 
@@ -64,6 +65,20 @@ function extensionFor(mime: string) {
 type RecordingState = "idle" | "recording" | "paused" | "stopped";
 type Step = "compose" | "selfscore";
 
+function uniqueValues(values: string[]) {
+  const seen = new Set<string>();
+  const out: string[] = [];
+  for (const v of values) {
+    const t = v.trim();
+    const key = t.toLowerCase();
+    if (t && !seen.has(key)) {
+      seen.add(key);
+      out.push(t);
+    }
+  }
+  return out.slice(0, 15);
+}
+
 function formatTimer(totalSeconds: number) {
   const m = Math.floor(totalSeconds / 60);
   const s = totalSeconds % 60;
@@ -103,13 +118,26 @@ export default function NewEntryPage() {
   const [transcribing, setTranscribing] = useState(false);
   const [transcribeNote, setTranscribeNote] = useState<string | null>(null);
 
+  // Audiences and goals used on earlier entries by whoever is signed in (or
+  // on this device, for a guest), most recent first, for the dropdowns.
+  const [audienceOptions, setAudienceOptions] = useState<string[]>([]);
+  const [goalOptions, setGoalOptions] = useState<string[]>([]);
+  const [audioSeconds, setAudioSeconds] = useState<number | null>(null);
+
   // Self-score step
   const [step, setStep] = useState<Step>("compose");
   const [selfScore, setSelfScore] = useState(50);
   const [pendingScores, setPendingScores] = useState<ScoreResult | null>(null);
 
   useEffect(() => {
-    getPreferences().then((prefs) => setStrictness(prefs.analyzerStrictness));
+    getPreferences().then((prefs) => {
+      setStrictness(prefs.analyzerStrictness);
+      setGoalOptions((prev) => uniqueValues([...prev, ...prefs.focus]));
+    });
+    getEntries().then((all) => {
+      setAudienceOptions(uniqueValues(all.map((e) => e.audience)));
+      setGoalOptions((prev) => uniqueValues([...all.map((e) => e.goal), ...prev]));
+    });
     // Pick up a draft handed off from /notes ("Full analysis"), if
     // there is one, then clear it so it doesn't resurface on a later visit.
     if (typeof window !== "undefined") {
@@ -140,6 +168,7 @@ export default function NewEntryPage() {
 
   function clearAudio() {
     setAudioUrl(null);
+    setAudioSeconds(null);
     setTranscribeNote(null);
     chunksRef.current = [];
   }
@@ -223,7 +252,17 @@ export default function NewEntryPage() {
       return;
     }
     setAudioName(file.name);
-    setAudioUrl(URL.createObjectURL(file));
+    const url = URL.createObjectURL(file);
+    setAudioUrl(url);
+    // Read the file's length from its metadata so the feedback can show it.
+    const probe = new Audio();
+    probe.preload = "metadata";
+    probe.onloadedmetadata = () => {
+      if (Number.isFinite(probe.duration) && probe.duration > 0) {
+        setAudioSeconds(Math.round(probe.duration));
+      }
+    };
+    probe.src = url;
     void transcribeBlob(file, file.name);
   }
 
@@ -331,6 +370,18 @@ export default function NewEntryPage() {
     setRecordingState("idle");
   }
 
+  // Wipes the transcript and any recording/upload so you can start fresh.
+  function handleClear() {
+    stopEverything();
+    clearAudio();
+    setText("");
+    setSeconds(0);
+    setError(null);
+    setMicError(null);
+    setWaveHeights(Array(WAVE_BARS).fill(20));
+    setRecordingState("idle");
+  }
+
   function finishRecording(): Promise<Blob | null> {
     return new Promise((resolve) => {
       const recorder = recorderRef.current;
@@ -366,6 +417,7 @@ export default function NewEntryPage() {
       return;
     }
     const name = `recording.${extensionFor(blob.type)}`;
+    setAudioSeconds(Math.max(1, seconds));
     setAudioName(name);
     setAudioUrl(URL.createObjectURL(blob));
     // Transcribe straight away; it fills the text box and moves you there.
@@ -385,10 +437,17 @@ export default function NewEntryPage() {
       const res = await fetch("/api/score", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text, audience, goal, strictness }),
+        body: JSON.stringify({
+          text,
+          audience,
+          goal,
+          strictness,
+          mode,
+          durationSeconds: mode === "write" ? undefined : (audioSeconds ?? undefined),
+        }),
       });
       const data = await res.json();
-      const scores: ScoreResult = data.scores ?? mockScore(text, strictness);
+      const scores: ScoreResult = data.scores ?? mockScore(text, strictness, mode);
       setPendingScores(scores);
       setStep("selfscore"); // ask for their guess before they see our number
     } catch {
@@ -417,6 +476,7 @@ export default function NewEntryPage() {
       text,
       scores: pendingScores,
       selfScore,
+      durationSeconds: mode === "write" ? undefined : (audioSeconds ?? undefined),
     });
     router.push(`/entry/${id}`);
   }
@@ -514,7 +574,7 @@ export default function NewEntryPage() {
                 mode === m.value
                   ? "bg-brand-yellow text-on-accent"
                   : m.available
-                    ? "bg-stone-100 text-stone-600 hover:bg-stone-200 dark:bg-stone-800 dark:text-stone-300"
+                    ? "bg-stone-100 text-stone-600 hover:bg-stone-200 hover:text-stone-900 dark:bg-stone-800 dark:text-stone-300 dark:hover:bg-stone-700 dark:hover:text-stone-50"
                     : "cursor-not-allowed bg-stone-100 text-stone-400 dark:bg-stone-900 dark:text-stone-600"
               }`}
             >
@@ -525,17 +585,19 @@ export default function NewEntryPage() {
         </div>
 
         <div className="mb-5 grid grid-cols-2 gap-3">
-          <input
+          <SuggestInput
             value={audience}
-            onChange={(e) => setAudience(e.target.value)}
+            onChange={setAudience}
+            options={audienceOptions}
+            ariaLabel="Audience"
             placeholder="Audience (e.g. hiring manager)"
-            className="rounded-lg border border-stone-300 bg-transparent px-3 py-2 text-sm text-ink placeholder:text-stone-400 focus:border-brand-blue focus:outline-none dark:border-stone-700 dark:text-stone-100"
           />
-          <input
+          <SuggestInput
             value={goal}
-            onChange={(e) => setGoal(e.target.value)}
+            onChange={setGoal}
+            options={goalOptions}
+            ariaLabel="Goal"
             placeholder="Goal (e.g. land the interview)"
-            className="rounded-lg border border-stone-300 bg-transparent px-3 py-2 text-sm text-ink placeholder:text-stone-400 focus:border-brand-blue focus:outline-none dark:border-stone-700 dark:text-stone-100"
           />
         </div>
 
@@ -682,14 +744,24 @@ export default function NewEntryPage() {
 
         {error && <p className="mt-2 text-xs text-red-500">{error}</p>}
 
-        <button
-          id="tour-submit-btn"
-          onClick={handleSubmit}
-          disabled={!text.trim() || submitting}
-          className="mt-3 flex h-9 w-full items-center justify-center rounded-md bg-brand-yellow text-xs font-semibold text-on-accent hover:bg-brand-yellow-dark disabled:cursor-not-allowed disabled:opacity-40"
-        >
-          {submitting ? "Scoring…" : "Submit for feedback"}
-        </button>
+        <div className="mt-3 flex divide-x divide-stone-300 overflow-hidden rounded-md border border-stone-300 dark:divide-stone-700 dark:border-stone-700">
+          <button
+            type="button"
+            onClick={handleClear}
+            disabled={submitting || (!text && !audioUrl && recordingState === "idle")}
+            className="flex h-9 shrink-0 items-center justify-center px-3.5 text-xs font-semibold text-stone-600 transition-colors hover:bg-stone-200 hover:text-stone-900 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent dark:text-stone-300 dark:hover:bg-stone-700 dark:hover:text-stone-50"
+          >
+            {mode === "write" ? "Clear text" : "Clear transcription"}
+          </button>
+          <button
+            id="tour-submit-btn"
+            onClick={handleSubmit}
+            disabled={!text.trim() || submitting}
+            className="flex h-9 flex-1 items-center justify-center bg-brand-yellow text-xs font-semibold text-on-accent hover:bg-brand-yellow-dark disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            {submitting ? "Scoring…" : "Submit for feedback"}
+          </button>
+        </div>
       </main>
       <TourOverlay tourId="new-entry" steps={NEW_ENTRY_TOUR} />
     </div>
